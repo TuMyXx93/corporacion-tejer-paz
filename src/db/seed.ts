@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { requireDb } from './index';
 import { actionAreas, pageSections, projects, siteSettings } from './schema';
 import {
@@ -6,6 +7,12 @@ import {
   DEFAULT_PROJECTS,
   DEFAULT_SITE_SETTINGS,
 } from '../data/default-content';
+
+for (const envFile of ['.env.local', '.env']) {
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+  }
+}
 
 async function seed() {
   const db = requireDb();

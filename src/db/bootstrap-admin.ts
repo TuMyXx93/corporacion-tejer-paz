@@ -1,7 +1,14 @@
+import { existsSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
 import { requireDb } from './index';
 import { user } from './schema';
 import { getAuth } from '../lib/auth';
+
+for (const envFile of ['.env.local', '.env']) {
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+  }
+}
 
 async function bootstrapSuperadmin() {
   const email = process.env.BOOTSTRAP_SUPERADMIN_EMAIL?.trim().toLowerCase();

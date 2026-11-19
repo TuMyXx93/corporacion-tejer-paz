@@ -9,6 +9,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'text-summary', 'lcov', 'json-summary'],
       include: [
+        'src/lib/auth/origins.ts',
         'src/lib/auth/permissions.ts',
         'src/lib/auth/guards.ts',
         'src/lib/cms/schemas.ts',
