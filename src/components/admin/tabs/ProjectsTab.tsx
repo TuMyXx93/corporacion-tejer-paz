@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import type { MediaAssetData, ProjectItemData } from '@/data/default-content';
+import { toSlug } from '@/lib/format';
 import {
   isNextOptimizableImage,
   type DocumentAttachment,
@@ -32,15 +33,6 @@ interface ProjectsTabProps {
   onProjectsChange: (projects: ProjectItemData[]) => void;
   onAssetCreated: (asset: MediaAssetData) => void;
   feedback: AdminFeedbackHandlers;
-}
-
-function toSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
 }
 
 export function ProjectsTab({
@@ -167,6 +159,8 @@ export function ProjectsTab({
         resetForm(updatedList.length);
       }
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al guardar el proyecto.');
     } finally {
       setSaving(false);
     }
@@ -174,36 +168,40 @@ export function ProjectsTab({
 
   async function handleTogglePublish(project: ProjectItemData) {
     feedback.clearFeedback();
-    const res = await fetch('/api/admin/projects', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: project.id, isPublished: !project.isPublished }),
-    });
-    const json = (await res.json().catch(() => ({}))) as {
-      error?: string;
-      project?: ProjectItemData;
-    };
-    if (!res.ok || !json.project) {
-      feedback.setError(json.error || 'No se pudo actualizar el estado del proyecto.');
-      return;
+    try {
+      const res = await fetch('/api/admin/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: project.id, isPublished: !project.isPublished }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        project?: ProjectItemData;
+      };
+      if (!res.ok || !json.project) {
+        feedback.setError(json.error || 'No se pudo actualizar el estado del proyecto.');
+        return;
+      }
+      onProjectsChange(
+        projects.map(p =>
+          p.id === project.id
+            ? {
+                ...json.project!,
+                mediaItems: json.project!.mediaItems ?? [],
+                documents: json.project!.documents ?? [],
+              }
+            : p
+        )
+      );
+      feedback.setNotice(
+        json.project.isPublished
+          ? `Proyecto "${project.title}" publicado en el sitio.`
+          : `Proyecto "${project.title}" movido a borrador oculto.`
+      );
+      router.refresh();
+    } catch {
+      feedback.setError('Error de conexión al cambiar el estado del proyecto.');
     }
-    onProjectsChange(
-      projects.map(p =>
-        p.id === project.id
-          ? {
-              ...json.project!,
-              mediaItems: json.project!.mediaItems ?? [],
-              documents: json.project!.documents ?? [],
-            }
-          : p
-      )
-    );
-    feedback.setNotice(
-      json.project.isPublished
-        ? `Proyecto "${project.title}" publicado en el sitio.`
-        : `Proyecto "${project.title}" movido a borrador oculto.`
-    );
-    router.refresh();
   }
 
   async function handleConfirmDelete() {
@@ -225,6 +223,8 @@ export function ProjectsTab({
       feedback.setNotice(`Proyecto "${deleteTarget.title}" eliminado permanentemente.`);
       setDeleteTarget(null);
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al eliminar el proyecto.');
     } finally {
       setDeleting(false);
     }
@@ -370,10 +370,15 @@ export function ProjectsTab({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="project-title"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Título del proyecto *
             </label>
             <input
+              id="project-title"
+              name="title"
               required
               placeholder="Ej. Llamado a la paz"
               value={title}
@@ -389,10 +394,15 @@ export function ProjectsTab({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="project-slug"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Slug URL *
             </label>
             <input
+              id="project-slug"
+              name="slug"
               required
               placeholder="llamado-a-la-paz"
               value={slug}
@@ -406,10 +416,15 @@ export function ProjectsTab({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="project-number-label"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Número *
               </label>
               <input
+                id="project-number-label"
+                name="numberLabel"
                 required
                 placeholder="04"
                 value={numberLabel}
@@ -418,10 +433,15 @@ export function ProjectsTab({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="project-sort-order"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Orden
               </label>
               <input
+                id="project-sort-order"
+                name="sortOrder"
                 type="number"
                 min={0}
                 max={999}
@@ -435,10 +455,15 @@ export function ProjectsTab({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="project-summary"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Resumen breve
             </label>
             <input
+              id="project-summary"
+              name="summary"
               placeholder="Resumen en una línea para listados"
               value={summary}
               onChange={e => setSummary(e.target.value)}
@@ -447,8 +472,13 @@ export function ProjectsTab({
           </div>
 
           <div className="flex items-end pb-2">
-            <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso">
+            <label
+              htmlFor="project-is-published"
+              className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso"
+            >
               <input
+                id="project-is-published"
+                name="isPublished"
                 type="checkbox"
                 checked={isPublished}
                 onChange={e => setIsPublished(e.target.checked)}
@@ -460,10 +490,15 @@ export function ProjectsTab({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold text-espresso">
+          <label
+            htmlFor="project-description"
+            className="mb-1 block text-xs font-semibold text-espresso"
+          >
             Descripción completa de la iniciativa
           </label>
           <textarea
+            id="project-description"
+            name="description"
             rows={4}
             placeholder="Describe el impacto, territorios y logros del proyecto..."
             value={description}
@@ -472,7 +507,6 @@ export function ProjectsTab({
           />
         </div>
 
-        {/* Portada */}
         <div className="space-y-3 rounded-xl border border-taupe bg-cream p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-semibold text-espresso">
@@ -504,6 +538,9 @@ export function ProjectsTab({
 
             <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <input
+                id="project-image-url"
+                name="imageUrl"
+                aria-label="URL de imagen de portada del proyecto"
                 required
                 placeholder="URL de imagen (/images/... o https://...)"
                 value={imageUrl}
@@ -511,6 +548,9 @@ export function ProjectsTab({
                 className="w-full min-w-0 rounded-lg border border-taupe bg-surface px-3 py-2 text-sm text-ink"
               />
               <input
+                id="project-image-alt"
+                name="imageAlt"
+                aria-label="Descripción accesible (alt) de la fotografía"
                 required
                 placeholder="Descripción accesible (alt) de la fotografía *"
                 value={imageAlt}

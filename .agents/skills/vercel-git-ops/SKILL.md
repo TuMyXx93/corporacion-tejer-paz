@@ -11,7 +11,8 @@ Reemplaza MCPs de GitHub/Vercel con CLIs locales auditables y con alcance acotad
 
 ## 1. Higiene de Git y GitHub CLI (`gh`)
 
-- Nunca desarrollar directamente sobre `main` una vez publicado; usar ramas descriptivas (`feat/...`, `fix/...`, `chore/...`) y abrir PR hacia `main`.
+- **`dev`** es la rama activa de desarrollo diario (las ramas `feat/*`, `fix/*`, `chore/*` parten de `dev` y regresan a `dev`).
+- **`main`** es exclusiva para Vercel Producción y está protegida por ruleset: nunca hacer push directo; todo pase a producción ocurre mediante PR `dev` → `main` con CI verde y aprobación de `@Tumi-dev`.
 - Antes de cualquier commit o PR, verificar que ningún secreto esté rastreado:
 
 ```powershell

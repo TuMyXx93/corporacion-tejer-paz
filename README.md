@@ -8,7 +8,7 @@
 [![pnpm](https://img.shields.io/badge/pnpm-12.21.0-f69220?style=flat-square&logo=pnpm)](https://pnpm.io/)
 [![WCAG 2.1 AA](https://img.shields.io/badge/WCAG_2.1-AA-15803d?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
-Plataforma institucional de **Corporación Tejer Paz** (construcción de paz, defensa de derechos humanos y protección territorial en el suroccidente colombiano) con sitio público optimizado por ISR, formulario de contacto híbrido y panel administrativo con control de acceso basado en roles (`superadmin` | `admin`).
+Plataforma institucional de **Corporación Tejer Paz** (construcción de paz, defensa de derechos humanos y protección territorial en el suroccidente colombiano) con sistema visual **60-30-10** derivado del logotipo oficial, sitio público optimizado por ISR, multimedia híbrida (imágenes en Vercel Blob, videos YouTube/Vimeo con privacidad y cartillas PDF), formulario de contacto híbrido y panel administrativo modular con RBAC (`superadmin` | `admin`).
 
 ---
 
@@ -33,25 +33,42 @@ pnpm run db:push
 pnpm run db:seed
 pnpm run admin:bootstrap
 
-# 5. Levantar entorno de desarrollo
+# 5. (Opcional) Sincronizar blobs y migrar imágenes iniciales de public/images/ a Vercel Blob
+pnpm run media:migrate-blob
+
+# 6. Levantar entorno de desarrollo
 pnpm run dev
 ```
 
-_(Si aún no configuras `DATABASE_URL`, las páginas públicas `/` y `/proyectos` renderizan automáticamente con el respaldo editorial en `src/data/default-content.ts`)._
+_(Si aún no configuras `DATABASE_URL`, las páginas públicas `/` y `/proyectos` renderizan automáticamente con el respaldo editorial en [`src/data/default-content.ts`](./src/data/default-content.ts))._
+
+---
+
+## Características Principales
+
+- **Identidad Visual 60-30-10:** Paleta muestreada del logotipo (`#FCFBF8`, `#3B2816`, `#6E4713`, `#C68E28`, `#FBF3DF`), tipografía `Syne` + `Public Sans`, cabecera translúcida adaptativa (`SiteHeader`) con contraste dinámico en secciones claras/oscuras y Hero panorámico `45:17` sin recorte en móvil/desktop.
+- **Panel Administrativo Modular (`/admin`) con 7 Módulos:**
+  1. **Secciones:** textos, visibilidad, imagen principal, galerías mixtas y documentos PDF por sección.
+  2. **Áreas de Acción:** CRUD completo con orden, activación y confirmación destructiva segura.
+  3. **Proyectos:** CRUD completo, publicación/borrador, galería mixta (imágenes + videos) y PDFs adjuntos.
+  4. **Multimedia:** biblioteca unificada con subida directa a Vercel Blob (`<= 10 MB` imágenes, `<= 15 MB` PDFs), registro de videos YouTube/Vimeo y sincronización/migración Blob.
+  5. **Mensajes:** bandeja semaforizada (`Nuevo`, `Leído`, `Respondido`), carpeta dedicada de `Archivados`, respuesta `mailto:` y eliminación segura.
+  6. **Configuración:** marca, SEO, teléfonos, correo, Instagram (`https://`) y logotipo (escritura exclusiva `superadmin`).
+  7. **Usuarios y Roles:** alta, edición de rol, restablecimiento de contraseña, suspensión con revocación inmediata de sesiones, eliminación y registro de auditoría (`superadmin`).
 
 ---
 
 ## Stack Tecnológico
 
-| Capa                   | Tecnología                                                            | Propósito                                                         |
-| :--------------------- | :-------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| **Framework & UI**     | Next.js 16.4 (App Router, RSC + ISR) · React 19 · Tailwind CSS v4     | Sitio público rápido, SEO nativo y panel administrativo           |
-| **Tipado y Contratos** | TypeScript 5.9 (`strict`) · Zod 4                                     | Validación compartida cliente/servidor                            |
-| **Auth y RBAC**        | Better Auth 1.7 (`admin` plugin + `createAccessControl`)              | Sesiones en BD y matriz estricta `superadmin` vs `admin`          |
-| **Base de Datos**      | Drizzle ORM 0.45 · Neon Postgres (`@neondatabase/serverless`)         | Secciones, proyectos, medios, mensajes y auditoría                |
-| **Media Storage**      | Vercel Blob (`@vercel/blob/client`, abstraído para Cloudflare R2)     | Subida directa cliente `<= 10 MB` (evita tope `4.5 MB` de Vercel) |
-| **Mensajería**         | Resend 6 + persistencia en `contact_messages`                         | Notificación por correo + bandeja administrativa                  |
-| **Calidad y CI/CD**    | Vitest 5 (V8 coverage) · Playwright + `@axe-core/playwright` · CodeQL | Cobertura unitaria/API, E2E desktop/móvil y accesibilidad WCAG AA |
+| Capa                   | Tecnología                                                            | Propósito                                                                   |
+| :--------------------- | :-------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| **Framework & UI**     | Next.js 16.4 (App Router, RSC + ISR) · React 19 · Tailwind CSS v4     | Sitio público rápido, SEO nativo y panel administrativo responsivo          |
+| **Tipado y Contratos** | TypeScript 5.9 (`strict`) · Zod 4                                     | Validación compartida cliente/servidor                                      |
+| **Auth y RBAC**        | Better Auth 1.7 (`admin` plugin + `createAccessControl`)              | Sesiones en BD, orígenes Preview/Prod y matriz `superadmin` vs `admin`      |
+| **Base de Datos**      | Drizzle ORM 0.45 · Neon Postgres (`@neondatabase/serverless`)         | Secciones, áreas de acción, proyectos, medios JSONB, mensajes y auditoría   |
+| **Media Storage**      | Vercel Blob (`@vercel/blob/client`, abstraído para Cloudflare R2)     | Subida directa cliente (imágenes `<= 10 MB`, PDFs `<= 15 MB`, embeds HTTPS) |
+| **Mensajería**         | Resend 6 + persistencia en `contact_messages`                         | Notificación por correo + bandeja administrativa semaforizada               |
+| **Calidad y CI/CD**    | Vitest 5 (V8 coverage) · Playwright + `@axe-core/playwright` · CodeQL | Cobertura unitaria/API, E2E (`1440px`, `390px`, `360px`) y WCAG AA          |
 
 ---
 
@@ -72,7 +89,7 @@ pnpm audit --prod --audit-level=high  # 0 vulnerabilidades altas/críticas
 pnpm run format:check                 # Prettier
 pnpm run lint                         # ESLint 9
 pnpm run type-check                   # tsc --noEmit
-pnpm run test:coverage                # Vitest + umbrales V8 (>=85% líneas/funciones, >=80% ramas)
+pnpm run test:coverage                # Vitest + umbrales V8 (>=85% líneas/funciones/sentencias, >=80% ramas)
 pnpm run build                        # next build (producción)
-pnpm run test:e2e                     # Playwright + @axe-core/playwright (1440px y 390px)
+pnpm run test:e2e                     # Playwright + @axe-core/playwright (1440px, 390px y 360px)
 ```

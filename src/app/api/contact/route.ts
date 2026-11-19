@@ -127,12 +127,12 @@ export async function POST(request: Request) {
         replyTo: data.email,
         subject: `[Web Tejer Paz] ${sanitizeHeaderText(data.subject)}`,
         html: `
-          <div style="font-family: Arial, sans-serif; color: #4D3F32; line-height: 1.6;">
+          <div style="font-family: Arial, sans-serif; color: #3B2816; line-height: 1.6;">
             <h2 style="margin: 0 0 12px;">Nuevo mensaje desde el sitio web</h2>
             <p><strong>Nombre:</strong> ${safeFullName}</p>
             <p><strong>Correo:</strong> ${safeEmail}</p>
             <p><strong>Asunto:</strong> ${safeSubject}</p>
-            <hr style="border: none; border-top: 1px solid #C8C1B8; margin: 16px 0;" />
+            <hr style="border: none; border-top: 1px solid #E2D9C9; margin: 16px 0;" />
             <p>${safeMessage}</p>
           </div>
         `,

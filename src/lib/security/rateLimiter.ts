@@ -7,8 +7,20 @@ export interface RateLimitResult {
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
+const MAX_STORE_ENTRIES = 500;
 
 const memoryStore = new Map<string, number[]>();
+
+function pruneExpiredEntries(windowStart: number): void {
+  for (const [key, entryTimestamps] of memoryStore.entries()) {
+    const active = entryTimestamps.filter(ts => ts > windowStart);
+    if (active.length === 0) {
+      memoryStore.delete(key);
+    } else if (active.length !== entryTimestamps.length) {
+      memoryStore.set(key, active);
+    }
+  }
+}
 
 export function checkRateLimit(
   identifier: string,
@@ -27,6 +39,10 @@ export function checkRateLimit(
       limit,
       resetAt: oldest + windowMs,
     };
+  }
+
+  if (memoryStore.size > MAX_STORE_ENTRIES) {
+    pruneExpiredEntries(windowStart);
   }
 
   timestamps.push(now);

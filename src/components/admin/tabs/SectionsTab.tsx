@@ -8,6 +8,7 @@ import type { MediaAssetData, PageSectionData } from '@/data/default-content';
 import { isNextOptimizableImage } from '@/lib/media/embeds';
 import { MediaGalleryEditor } from '../MediaGalleryEditor';
 import { MediaPickerModal } from '../MediaPickerModal';
+import { ResponsiveSelect } from '../ResponsiveSelect';
 import type { AdminFeedbackHandlers } from '../types';
 
 interface SectionsTabProps {
@@ -71,6 +72,8 @@ export function SectionsTab({
         `Sección "${SECTION_LABELS[activeSection.key] || activeSection.key}" actualizada y caché pública revalidada.`
       );
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión con el servidor. Intenta nuevamente.');
     } finally {
       setSaving(false);
     }
@@ -96,27 +99,24 @@ export function SectionsTab({
           </p>
         </div>
 
-        {/* Móvil: desplegable limpio; Tablet/Escritorio: píldoras de sección */}
         <div className="w-full min-w-0 md:hidden">
-          <label htmlFor="section-selector" className="sr-only">
+          <span id="section-selector-label" className="sr-only">
             Seleccionar sección
-          </label>
-          <select
+          </span>
+          <ResponsiveSelect
             id="section-selector"
-            aria-label="Seleccionar sección"
+            ariaLabelledBy="section-selector-label"
             value={selectedKey}
-            onChange={e => {
+            options={sections.map(s => ({
+              value: s.key,
+              label: SECTION_LABELS[s.key] || s.key,
+              description: s.title,
+            }))}
+            onChange={value => {
               feedback.clearFeedback();
-              setSelectedKey(e.target.value);
+              setSelectedKey(value);
             }}
-            className="w-full max-w-full min-w-0 truncate rounded-lg border border-taupe bg-cream px-3 py-2 text-sm font-medium text-ink focus:border-umber"
-          >
-            {sections.map(s => (
-              <option key={s.key} value={s.key}>
-                {SECTION_LABELS[s.key] || s.key} — {s.title}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="hidden flex-wrap gap-1.5 md:flex">
@@ -153,8 +153,13 @@ export function SectionsTab({
             )}
             <span>Visibilidad en el sitio público</span>
           </div>
-          <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso">
+          <label
+            htmlFor="section-visibility"
+            className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso"
+          >
             <input
+              id="section-visibility"
+              name="isVisible"
               type="checkbox"
               checked={activeSection.isVisible}
               onChange={e => patchActive({ isVisible: e.target.checked })}
@@ -166,10 +171,15 @@ export function SectionsTab({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="min-w-0">
-            <label className="mb-1.5 block text-sm font-semibold text-espresso">
+            <label
+              htmlFor="section-title"
+              className="mb-1.5 block text-sm font-semibold text-espresso"
+            >
               Título
             </label>
             <input
+              id="section-title"
+              name="title"
               type="text"
               required
               value={activeSection.title}
@@ -179,10 +189,15 @@ export function SectionsTab({
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1.5 block text-sm font-semibold text-espresso">
+            <label
+              htmlFor="section-subtitle"
+              className="mb-1.5 block text-sm font-semibold text-espresso"
+            >
               Subtítulo
             </label>
             <input
+              id="section-subtitle"
+              name="subtitle"
               type="text"
               value={activeSection.subtitle}
               onChange={e => patchActive({ subtitle: e.target.value })}
@@ -192,10 +207,15 @@ export function SectionsTab({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-espresso">
+          <label
+            htmlFor="section-body"
+            className="mb-1.5 block text-sm font-semibold text-espresso"
+          >
             Texto principal
           </label>
           <textarea
+            id="section-body"
+            name="body"
             rows={5}
             value={activeSection.body}
             onChange={e => patchActive({ body: e.target.value })}
@@ -206,10 +226,15 @@ export function SectionsTab({
         {showCtas && (
           <div className="grid grid-cols-1 gap-4 rounded-xl border border-taupe bg-cream p-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="section-cta-primary-label"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Botón principal (texto)
               </label>
               <input
+                id="section-cta-primary-label"
+                name="ctaPrimaryLabel"
                 type="text"
                 value={activeSection.ctaPrimaryLabel || ''}
                 onChange={e => patchActive({ ctaPrimaryLabel: e.target.value || null })}
@@ -217,10 +242,15 @@ export function SectionsTab({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="section-cta-primary-href"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Botón principal (enlace)
               </label>
               <input
+                id="section-cta-primary-href"
+                name="ctaPrimaryHref"
                 type="text"
                 value={activeSection.ctaPrimaryHref || ''}
                 onChange={e => patchActive({ ctaPrimaryHref: e.target.value || null })}
@@ -228,10 +258,15 @@ export function SectionsTab({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="section-cta-secondary-label"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Botón secundario (texto)
               </label>
               <input
+                id="section-cta-secondary-label"
+                name="ctaSecondaryLabel"
                 type="text"
                 value={activeSection.ctaSecondaryLabel || ''}
                 onChange={e => patchActive({ ctaSecondaryLabel: e.target.value || null })}
@@ -239,10 +274,15 @@ export function SectionsTab({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="section-cta-secondary-href"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Botón secundario (enlace)
               </label>
               <input
+                id="section-cta-secondary-href"
+                name="ctaSecondaryHref"
                 type="text"
                 value={activeSection.ctaSecondaryHref || ''}
                 onChange={e => patchActive({ ctaSecondaryHref: e.target.value || null })}
@@ -259,8 +299,11 @@ export function SectionsTab({
             </p>
             <div className="space-y-2">
               {activeSection.items.map((item, idx) => (
-                <div key={`${item}-${idx}`} className="flex items-center gap-2">
+                <div key={`section-item-${idx}`} className="flex items-center gap-2">
                   <input
+                    id={`section-item-${idx}`}
+                    name={`sectionItem-${idx}`}
+                    aria-label={`Indicador ${idx + 1}`}
                     type="text"
                     value={item}
                     onChange={e => {
@@ -288,6 +331,9 @@ export function SectionsTab({
             </div>
             <div className="flex flex-wrap gap-2">
               <input
+                id="section-new-bullet"
+                name="newBullet"
+                aria-label="Nuevo punto destacado"
                 type="text"
                 value={newBullet}
                 onChange={e => setNewBullet(e.target.value)}
@@ -354,10 +400,15 @@ export function SectionsTab({
 
             <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="min-w-0">
-                <label className="mb-1 block text-xs font-semibold text-espresso">
+                <label
+                  htmlFor="section-image-url"
+                  className="mb-1 block text-xs font-semibold text-espresso"
+                >
                   URL de Imagen
                 </label>
                 <input
+                  id="section-image-url"
+                  name="imageUrl"
                   type="text"
                   value={activeSection.imageUrl || ''}
                   onChange={e => patchActive({ imageUrl: e.target.value || null })}
@@ -365,10 +416,15 @@ export function SectionsTab({
                 />
               </div>
               <div className="min-w-0">
-                <label className="mb-1 block text-xs font-semibold text-espresso">
+                <label
+                  htmlFor="section-image-alt"
+                  className="mb-1 block text-xs font-semibold text-espresso"
+                >
                   Texto alternativo (alt)
                 </label>
                 <input
+                  id="section-image-alt"
+                  name="imageAlt"
                   type="text"
                   value={activeSection.imageAlt || ''}
                   onChange={e => patchActive({ imageAlt: e.target.value || null })}

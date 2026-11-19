@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { resolvePublicSiteUrl } from '@/lib/auth/origins';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = resolvePublicSiteUrl();
   return {
     rules: [
       {

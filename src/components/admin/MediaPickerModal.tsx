@@ -173,6 +173,9 @@ function MediaPickerModalInner({
               aria-hidden="true"
             />
             <input
+              id="media-picker-search"
+              name="mediaPickerSearch"
+              aria-label="Buscar archivo por nombre, título o texto alternativo"
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -182,6 +185,7 @@ function MediaPickerModalInner({
           </div>
 
           <label
+            htmlFor="media-picker-upload"
             className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-umber px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-espresso ${
               !storageConfigured || uploading ? 'cursor-not-allowed opacity-60' : ''
             }`}
@@ -195,6 +199,8 @@ function MediaPickerModalInner({
                   : 'Subir archivo nuevo'}
             </span>
             <input
+              id="media-picker-upload"
+              name="mediaPickerUpload"
               type="file"
               accept={acceptAttr}
               disabled={!storageConfigured || uploading}

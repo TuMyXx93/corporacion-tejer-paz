@@ -10,14 +10,8 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
 
 export const ALLOWED_DOCUMENT_MIME_TYPES = ['application/pdf'] as const;
 
-export const ALLOWED_UPLOAD_MIME_TYPES = [
-  ...ALLOWED_IMAGE_MIME_TYPES,
-  ...ALLOWED_DOCUMENT_MIME_TYPES,
-] as const;
-
-export const MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB via direct client upload
-export const MAX_PDF_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB via direct client upload
-export const MAX_UPLOAD_BYTES = MAX_PDF_UPLOAD_BYTES;
+export const MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024;
+export const MAX_PDF_UPLOAD_BYTES = 15 * 1024 * 1024;
 
 export function getActiveStorageProvider(): StorageProviderName {
   return process.env.STORAGE_PROVIDER === 'r2' ? 'r2' : 'vercel-blob';

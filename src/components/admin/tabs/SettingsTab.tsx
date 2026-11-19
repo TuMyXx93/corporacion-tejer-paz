@@ -51,6 +51,8 @@ export function SettingsTab({
       }
       feedback.setNotice('Configuración global guardada y sitio revalidado.');
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión al guardar la configuración.');
     } finally {
       setSaving(false);
     }
@@ -79,10 +81,15 @@ export function SettingsTab({
       <form onSubmit={handleSaveSettings} className="space-y-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="settings-org-name"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Nombre de la organización
             </label>
             <input
+              id="settings-org-name"
+              name="organizationName"
               disabled={!isSuperadmin}
               required
               value={settings.organizationName}
@@ -94,10 +101,15 @@ export function SettingsTab({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="settings-contact-email"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Correo oficial
             </label>
             <input
+              id="settings-contact-email"
+              name="contactEmail"
               disabled={!isSuperadmin}
               required
               type="email"
@@ -110,13 +122,17 @@ export function SettingsTab({
           </div>
         </div>
 
-        {/* SEO */}
         <div className="grid grid-cols-1 gap-4 rounded-xl border border-taupe bg-cream p-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="settings-seo-title"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Título SEO principal
             </label>
             <input
+              id="settings-seo-title"
+              name="seoTitle"
               disabled={!isSuperadmin}
               required
               value={settings.seoTitle}
@@ -126,10 +142,15 @@ export function SettingsTab({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="settings-footer-copyright"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Texto de copyright (Footer)
             </label>
             <input
+              id="settings-footer-copyright"
+              name="footerCopyright"
               disabled={!isSuperadmin}
               required
               value={settings.footerCopyright}
@@ -141,10 +162,15 @@ export function SettingsTab({
           </div>
 
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="settings-seo-description"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Descripción SEO (buscadores)
             </label>
             <textarea
+              id="settings-seo-description"
+              name="seoDescription"
               disabled={!isSuperadmin}
               required
               rows={2}
@@ -157,13 +183,15 @@ export function SettingsTab({
           </div>
         </div>
 
-        {/* Teléfonos e Instagram */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2 rounded-xl border border-taupe bg-cream p-4">
             <p className="text-xs font-semibold text-espresso">Teléfonos de contacto</p>
             {settings.phones.map((phone, idx) => (
-              <div key={`${phone}-${idx}`} className="flex items-center gap-2">
+              <div key={`setting-phone-${idx}`} className="flex items-center gap-2">
                 <input
+                  id={`settings-phone-${idx}`}
+                  name={`phone-${idx}`}
+                  aria-label={`Teléfono de contacto ${idx + 1}`}
                   disabled={!isSuperadmin}
                   value={phone}
                   onChange={e => {
@@ -194,6 +222,9 @@ export function SettingsTab({
             {isSuperadmin && settings.phones.length < 5 && (
               <div className="flex gap-2 pt-1">
                 <input
+                  id="settings-new-phone"
+                  name="newPhone"
+                  aria-label="Nuevo teléfono de contacto"
                   type="text"
                   value={newPhone}
                   onChange={e => setNewPhone(e.target.value)}
@@ -221,10 +252,15 @@ export function SettingsTab({
 
           <div className="space-y-3 rounded-xl border border-taupe bg-cream p-4">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="settings-instagram-handle"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Usuario de Instagram
               </label>
               <input
+                id="settings-instagram-handle"
+                name="instagramHandle"
                 disabled={!isSuperadmin}
                 required
                 value={settings.instagramHandle}
@@ -236,10 +272,15 @@ export function SettingsTab({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="settings-instagram-url"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 URL de Instagram
               </label>
               <input
+                id="settings-instagram-url"
+                name="instagramUrl"
                 disabled={!isSuperadmin}
                 required
                 type="url"
@@ -254,10 +295,15 @@ export function SettingsTab({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold text-espresso">
+          <label
+            htmlFor="settings-quote-text"
+            className="mb-1 block text-xs font-semibold text-espresso"
+          >
             Cita institucional
           </label>
           <textarea
+            id="settings-quote-text"
+            name="quoteText"
             disabled={!isSuperadmin}
             required
             rows={2}
@@ -267,7 +313,6 @@ export function SettingsTab({
           />
         </div>
 
-        {/* Logotipo */}
         <div className="space-y-3 rounded-xl border border-taupe bg-cream p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-semibold text-espresso">
@@ -301,6 +346,9 @@ export function SettingsTab({
 
             <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <input
+                id="settings-logo-url"
+                name="logoUrl"
+                aria-label="URL del logotipo oficial"
                 disabled={!isSuperadmin}
                 required
                 value={settings.logoUrl}
@@ -308,6 +356,9 @@ export function SettingsTab({
                 className="w-full min-w-0 rounded-lg border border-taupe bg-surface px-3 py-2 text-sm text-ink disabled:opacity-65"
               />
               <input
+                id="settings-logo-alt"
+                name="logoAlt"
+                aria-label="Texto alternativo del logotipo oficial"
                 disabled={!isSuperadmin}
                 required
                 value={settings.logoAlt}

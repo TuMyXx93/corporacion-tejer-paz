@@ -141,6 +141,38 @@ describe('CMS & Admin Zod Schemas', () => {
     });
     expect(invalidSettings.success).toBe(false);
 
+    const insecureInstagram = updateSiteSettingsSchema.safeParse({
+      organizationName: 'Corporación Tejer Paz',
+      seoTitle: 'Corporación Tejer Paz | Paz y Reconciliación',
+      seoDescription:
+        'Organización nacida del impulso juvenil del suroccidente colombiano para la construcción de paz.',
+      contactEmail: 'coorp.tejerpaz@gmail.com',
+      phones: ['301 3617133'],
+      instagramHandle: '@corp.tejepaz',
+      instagramUrl: 'http://www.instagram.com/corp.tejepaz/',
+      quoteText: 'La paz es el tejido que nos une y la reconciliación nos sostiene.',
+      footerCopyright: '© 2026 Corporación Tejer Paz.',
+      logoUrl: '/images/logo-corporacion-tejer-paz.png',
+      logoAlt: 'Logotipo de la Corporación Tejer Paz',
+    });
+    expect(insecureInstagram.success).toBe(false);
+
+    const xssInstagram = updateSiteSettingsSchema.safeParse({
+      organizationName: 'Corporación Tejer Paz',
+      seoTitle: 'Corporación Tejer Paz | Paz y Reconciliación',
+      seoDescription:
+        'Organización nacida del impulso juvenil del suroccidente colombiano para la construcción de paz.',
+      contactEmail: 'coorp.tejerpaz@gmail.com',
+      phones: ['301 3617133'],
+      instagramHandle: '@corp.tejepaz',
+      instagramUrl: 'javascript:alert(1)',
+      quoteText: 'La paz es el tejido que nos une y la reconciliación nos sostiene.',
+      footerCopyright: '© 2026 Corporación Tejer Paz.',
+      logoUrl: '/images/logo-corporacion-tejer-paz.png',
+      logoAlt: 'Logotipo de la Corporación Tejer Paz',
+    });
+    expect(xssInstagram.success).toBe(false);
+
     expect(
       updateMessageStatusSchema.safeParse({ id: 10, status: 'replied' }).success
     ).toBe(true);

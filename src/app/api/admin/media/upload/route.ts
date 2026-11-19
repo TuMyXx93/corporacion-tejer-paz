@@ -1,34 +1,17 @@
 import { NextResponse } from 'next/server';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
-import { desc } from 'drizzle-orm';
 import { requireDb } from '@/db';
 import { mediaAssets } from '@/db/schema';
 import { recordAuditLog, requireApiPermission } from '@/lib/auth/guards';
 import {
-  ALLOWED_UPLOAD_MIME_TYPES,
-  MAX_UPLOAD_BYTES,
+  ALLOWED_DOCUMENT_MIME_TYPES,
+  ALLOWED_IMAGE_MIME_TYPES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_PDF_UPLOAD_BYTES,
   getActiveStorageProvider,
   inferAssetTypeFromMime,
   isStorageConfigured,
 } from '@/lib/storage';
-
-export async function GET() {
-  const guard = await requireApiPermission('media', 'read');
-  if (!guard.ok) return guard.response;
-
-  const db = requireDb();
-  const rows = await db
-    .select()
-    .from(mediaAssets)
-    .orderBy(desc(mediaAssets.createdAt))
-    .limit(200);
-
-  return NextResponse.json({
-    provider: getActiveStorageProvider(),
-    configured: isStorageConfigured(),
-    assets: rows,
-  });
-}
 
 export async function POST(request: Request) {
   const provider = getActiveStorageProvider();
@@ -63,9 +46,12 @@ export async function POST(request: Request) {
         if (!guard.ok) {
           throw new Error('UNAUTHORIZED');
         }
+        const isPdf = pathname.toLowerCase().endsWith('.pdf');
         return {
-          allowedContentTypes: [...ALLOWED_UPLOAD_MIME_TYPES],
-          maximumSizeInBytes: MAX_UPLOAD_BYTES,
+          allowedContentTypes: [
+            ...(isPdf ? ALLOWED_DOCUMENT_MIME_TYPES : ALLOWED_IMAGE_MIME_TYPES),
+          ],
+          maximumSizeInBytes: isPdf ? MAX_PDF_UPLOAD_BYTES : MAX_IMAGE_UPLOAD_BYTES,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             actorId: guard.actor.id,

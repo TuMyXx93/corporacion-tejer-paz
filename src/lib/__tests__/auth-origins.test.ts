@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   normalizeOrigin,
   resolveAuthBaseUrl,
+  resolvePublicSiteUrl,
   resolveTrustedOrigins,
 } from '@/lib/auth/origins';
 
@@ -69,5 +70,37 @@ describe('Auth Origin & Vercel Preview Resolution', () => {
     expect(normalizeOrigin('bad host.vercel.app', true)).toBeNull();
     expect(normalizeOrigin('javascript:alert(1)', true)).toBeNull();
     expect(normalizeOrigin('https://tejerpaz.org/admin')).toBe('https://tejerpaz.org');
+  });
+
+  it('resolves public site metadata base URLs across local, preview, and production', () => {
+    const localEnv = { NODE_ENV: 'development' } as unknown as NodeJS.ProcessEnv;
+    expect(resolvePublicSiteUrl(localEnv)).toBe('http://localhost:3000');
+
+    const previewEnv = {
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'preview',
+      VERCEL_BRANCH_URL: 'corporacion-tejer-paz-git-dev.vercel.app',
+      VERCEL_URL: 'corporacion-tejer-paz-ephemeral.vercel.app',
+    } as unknown as NodeJS.ProcessEnv;
+    expect(resolvePublicSiteUrl(previewEnv)).toBe(
+      'https://corporacion-tejer-paz-git-dev.vercel.app'
+    );
+
+    const prodExplicitEnv = {
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'production',
+      NEXT_PUBLIC_APP_URL: 'https://tejerpaz.org/es/',
+      VERCEL_PROJECT_PRODUCTION_URL: 'corporacion-tejer-paz.vercel.app',
+    } as unknown as NodeJS.ProcessEnv;
+    expect(resolvePublicSiteUrl(prodExplicitEnv)).toBe('https://tejerpaz.org');
+
+    const prodFallbackEnv = {
+      NODE_ENV: 'production',
+      VERCEL_ENV: 'production',
+      VERCEL_PROJECT_PRODUCTION_URL: 'corporacion-tejer-paz.vercel.app',
+    } as unknown as NodeJS.ProcessEnv;
+    expect(resolvePublicSiteUrl(prodFallbackEnv)).toBe(
+      'https://corporacion-tejer-paz.vercel.app'
+    );
   });
 });

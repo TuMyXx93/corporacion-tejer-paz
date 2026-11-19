@@ -85,6 +85,7 @@ describe('Rate Limiter & Storage Helpers', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.useRealTimers();
   });
 
   it('blocks requests exceeding the sliding window limit', () => {
@@ -94,6 +95,28 @@ describe('Rate Limiter & Storage Helpers', () => {
     const sixth = checkRateLimit('127.0.0.1');
     expect(sixth.allowed).toBe(false);
     expect(sixth.remaining).toBe(0);
+  });
+
+  it('prunes expired rate limit entries when store exceeds capacity threshold', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-19T12:00:00Z'));
+
+    for (let i = 0; i < 501; i++) {
+      expect(checkRateLimit(`expired-${i}`, 2, 1000).allowed).toBe(true);
+    }
+    expect(checkRateLimit('partial-active', 2, 1000).allowed).toBe(true);
+
+    vi.advanceTimersByTime(500);
+    expect(checkRateLimit('partial-active', 2, 1000).allowed).toBe(true);
+
+    // At t=1100ms all expired-* keys have elapsed (>1000ms) while partial-active has 1 active hit
+    vi.advanceTimersByTime(600);
+    const fresh = checkRateLimit('fresh-visitor', 2, 1000);
+    expect(fresh.allowed).toBe(true);
+
+    // partial-active now has 1 active hit remaining, so 1 more succeeds and next is blocked
+    expect(checkRateLimit('partial-active', 2, 1000).allowed).toBe(true);
+    expect(checkRateLimit('partial-active', 2, 1000).allowed).toBe(false);
   });
 
   it('normalizes uploaded filenames to safe kebab-case and handles empty inputs', () => {

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, Phone } from 'lucide-react';
 import type { SiteSettingsData } from '@/data/default-content';
+import { formatTelHref } from '@/lib/format';
 import { isNextOptimizableImage } from '@/lib/media/embeds';
 
 interface SiteFooterProps {
@@ -25,12 +26,6 @@ function InstagramIcon({ className }: { className?: string }) {
       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
     </svg>
   );
-}
-
-function formatTelHref(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.startsWith('57')) return `tel:+${digits}`;
-  return `tel:+57${digits}`;
 }
 
 export function SiteFooter({ settings }: SiteFooterProps) {

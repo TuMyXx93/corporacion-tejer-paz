@@ -15,7 +15,9 @@ import {
   Trash2,
   UserPlus,
 } from 'lucide-react';
+import { formatDateTimeEs } from '@/lib/format';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { ResponsiveSelect } from '../ResponsiveSelect';
 import type { AdminFeedbackHandlers, AdminUserRow, AuditLogRow } from '../types';
 
 interface UsersTabProps {
@@ -29,22 +31,29 @@ interface UsersTabProps {
 
 type UserFilter = 'all' | 'superadmin' | 'admin' | 'active' | 'banned';
 
+const INLINE_ROLE_OPTIONS = [
+  { value: 'admin', label: 'Administrador' },
+  { value: 'superadmin', label: 'Superadministrador' },
+];
+
+const CREATE_ROLE_OPTIONS = [
+  {
+    value: 'admin',
+    label: 'Administrador',
+    description: 'Contenido, biblioteca multimedia y bandeja de mensajes',
+  },
+  {
+    value: 'superadmin',
+    label: 'Superadministrador',
+    description: 'Acceso total: usuarios, configuración global y auditoría',
+  },
+];
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'TP';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat('es-CO', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }
 
 export function UsersTab({
@@ -58,7 +67,6 @@ export function UsersTab({
   const [filter, setFilter] = useState<UserFilter>('all');
   const [query, setQuery] = useState('');
 
-  // Create user state
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -66,26 +74,22 @@ export function UsersTab({
   const [newRole, setNewRole] = useState<'admin' | 'superadmin'>('admin');
   const [creating, setCreating] = useState(false);
 
-  // Edit user state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editRole, setEditRole] = useState<'admin' | 'superadmin'>('admin');
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Password reset state
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
   const [resetPassword, setResetPassword] = useState('');
   const [showResetPass, setShowResetPass] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  // Ban / Delete confirmation
   const [banTarget, setBanTarget] = useState<AdminUserRow | null>(null);
   const [banReasonInput, setBanReasonInput] = useState('');
   const [banLoading, setBanLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Audit refresh
   const [refreshingAudit, setRefreshingAudit] = useState(false);
 
   const filtered = users.filter(u => {
@@ -114,6 +118,8 @@ export function UsersTab({
           }))
         );
       }
+    } catch {
+      feedback.setError('No se pudo actualizar el registro de auditoría.');
     } finally {
       setRefreshingAudit(false);
     }
@@ -154,6 +160,8 @@ export function UsersTab({
       setNewPassword('');
       feedback.setNotice(`Usuario ${json.user.email} creado con rol ${json.user.role}.`);
       void refreshAuditLogs();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al crear usuario.');
     } finally {
       setCreating(false);
     }
@@ -185,6 +193,8 @@ export function UsersTab({
       setEditingUserId(null);
       feedback.setNotice(`Cuenta de ${json.user.email} actualizada.`);
       void refreshAuditLogs();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al editar cuenta.');
     } finally {
       setSavingEdit(false);
     }
@@ -211,6 +221,8 @@ export function UsersTab({
       setResetPassword('');
       feedback.setNotice('Contraseña restablecida correctamente.');
       void refreshAuditLogs();
+    } catch {
+      feedback.setError('Error de conexión al restablecer la contraseña.');
     } finally {
       setSavingPassword(false);
     }
@@ -250,6 +262,8 @@ export function UsersTab({
       setBanTarget(null);
       setBanReasonInput('');
       void refreshAuditLogs();
+    } catch {
+      feedback.setError('Error de conexión al cambiar el estado de la cuenta.');
     } finally {
       setBanLoading(false);
     }
@@ -273,6 +287,8 @@ export function UsersTab({
       feedback.setNotice(`Usuario ${deleteTarget.email} eliminado permanentemente.`);
       setDeleteTarget(null);
       void refreshAuditLogs();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al eliminar usuario.');
     } finally {
       setDeleteLoading(false);
     }
@@ -330,6 +346,9 @@ export function UsersTab({
               aria-hidden="true"
             />
             <input
+              id="users-search"
+              name="usersSearch"
+              aria-label="Buscar usuarios por nombre o correo"
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -502,10 +521,15 @@ export function UsersTab({
                 {isEditing && (
                   <div className="flex flex-col gap-3 rounded-xl border border-taupe bg-cream p-3.5 sm:flex-row sm:items-end">
                     <div className="min-w-0 flex-1">
-                      <label className="mb-1 block text-xs font-semibold text-espresso">
+                      <label
+                        htmlFor={`edit-user-name-${u.id}`}
+                        className="mb-1 block text-xs font-semibold text-espresso"
+                      >
                         Nombre completo
                       </label>
                       <input
+                        id={`edit-user-name-${u.id}`}
+                        name={`editUserName-${u.id}`}
                         type="text"
                         value={editName}
                         onChange={e => setEditName(e.target.value)}
@@ -513,22 +537,23 @@ export function UsersTab({
                       />
                     </div>
                     {!isSelf && (
-                      <div className="w-full sm:w-52">
-                        <label className="mb-1 block text-xs font-semibold text-espresso">
-                          Rol RBAC
-                        </label>
-                        <select
-                          value={editRole}
-                          onChange={e =>
-                            setEditRole(
-                              e.target.value === 'superadmin' ? 'superadmin' : 'admin'
-                            )
-                          }
-                          className="w-full rounded-lg border border-taupe bg-surface px-3 py-1.5 text-sm text-ink"
+                      <div className="w-full min-w-0 sm:w-56">
+                        <span
+                          id={`edit-user-role-label-${u.id}`}
+                          className="mb-1 block text-xs font-semibold text-espresso"
                         >
-                          <option value="admin">Administrador</option>
-                          <option value="superadmin">Superadministrador</option>
-                        </select>
+                          Rol RBAC
+                        </span>
+                        <ResponsiveSelect
+                          id={`edit-user-role-${u.id}`}
+                          ariaLabelledBy={`edit-user-role-label-${u.id}`}
+                          value={editRole}
+                          options={INLINE_ROLE_OPTIONS}
+                          triggerClassName="bg-surface py-1.5"
+                          onChange={val =>
+                            setEditRole(val === 'superadmin' ? 'superadmin' : 'admin')
+                          }
+                        />
                       </div>
                     )}
                     <div className="flex gap-2">
@@ -554,11 +579,16 @@ export function UsersTab({
                 {isResettingPass && (
                   <div className="flex flex-col gap-3 rounded-xl border border-gold/50 bg-butter/50 p-3.5 sm:flex-row sm:items-end">
                     <div className="min-w-0 flex-1">
-                      <label className="mb-1 block text-xs font-semibold text-espresso">
+                      <label
+                        htmlFor={`reset-pass-${u.id}`}
+                        className="mb-1 block text-xs font-semibold text-espresso"
+                      >
                         Nueva contraseña (mínimo 10 caracteres)
                       </label>
                       <div className="relative">
                         <input
+                          id={`reset-pass-${u.id}`}
+                          name={`resetPass-${u.id}`}
                           type={showResetPass ? 'text' : 'password'}
                           minLength={10}
                           value={resetPassword}
@@ -618,23 +648,42 @@ export function UsersTab({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <input
-            required
-            placeholder="Nombre completo"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-3.5 py-2 text-sm text-ink"
-          />
-          <input
-            required
-            type="email"
-            placeholder="correo@organizacion.org"
-            value={newEmail}
-            onChange={e => setNewEmail(e.target.value)}
-            className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-3.5 py-2 text-sm text-ink"
-          />
-          <div className="relative">
+          <div className="min-w-0">
+            <label htmlFor="new-user-name" className="sr-only">
+              Nombre completo
+            </label>
             <input
+              id="new-user-name"
+              name="name"
+              required
+              placeholder="Nombre completo"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-3.5 py-2 text-sm text-ink"
+            />
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="new-user-email" className="sr-only">
+              Correo electrónico institucional
+            </label>
+            <input
+              id="new-user-email"
+              name="email"
+              required
+              type="email"
+              placeholder="correo@organizacion.org"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-3.5 py-2 text-sm text-ink"
+            />
+          </div>
+          <div className="relative min-w-0">
+            <label htmlFor="new-user-password" className="sr-only">
+              Contraseña inicial
+            </label>
+            <input
+              id="new-user-password"
+              name="password"
               required
               type={showNewPass ? 'text' : 'password'}
               minLength={10}
@@ -656,16 +705,18 @@ export function UsersTab({
               )}
             </button>
           </div>
-          <select
-            value={newRole}
-            onChange={e =>
-              setNewRole(e.target.value === 'superadmin' ? 'superadmin' : 'admin')
-            }
-            className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-3.5 py-2 text-sm text-ink"
-          >
-            <option value="admin">Administrador (contenido, medios e inbox)</option>
-            <option value="superadmin">Superadministrador (acceso total)</option>
-          </select>
+          <div className="min-w-0">
+            <span id="new-user-role-label" className="sr-only">
+              Rol RBAC de la nueva cuenta
+            </span>
+            <ResponsiveSelect
+              id="new-user-role"
+              ariaLabelledBy="new-user-role-label"
+              value={newRole}
+              options={CREATE_ROLE_OPTIONS}
+              onChange={val => setNewRole(val === 'superadmin' ? 'superadmin' : 'admin')}
+            />
+          </div>
         </div>
 
         <button
@@ -716,7 +767,7 @@ export function UsersTab({
                   <span className="font-medium text-ink">{log.summary}</span>
                 </div>
                 <span className="shrink-0 text-[11px] text-earth">
-                  {log.actorRole} · {formatDate(log.createdAt)}
+                  {log.actorRole} · {formatDateTimeEs(log.createdAt)}
                 </span>
               </div>
             ))}

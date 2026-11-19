@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Edit3, Eye, EyeOff, Image as ImageIcon, Plus, Trash2, X } from 'lucide-react';
 import type { ActionAreaData, MediaAssetData } from '@/data/default-content';
+import { toSlug } from '@/lib/format';
 import { isNextOptimizableImage } from '@/lib/media/embeds';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { MediaPickerModal } from '../MediaPickerModal';
@@ -17,15 +18,6 @@ interface ActionAreasTabProps {
   onActionAreasChange: (areas: ActionAreaData[]) => void;
   onAssetCreated: (asset: MediaAssetData) => void;
   feedback: AdminFeedbackHandlers;
-}
-
-function toSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
 }
 
 export function ActionAreasTab({
@@ -130,6 +122,8 @@ export function ActionAreasTab({
       }
       resetForm();
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al guardar el área.');
     } finally {
       setSaving(false);
     }
@@ -137,26 +131,32 @@ export function ActionAreasTab({
 
   async function handleToggleActive(area: ActionAreaData) {
     feedback.clearFeedback();
-    const res = await fetch('/api/admin/action-areas', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: area.id, isActive: !area.isActive }),
-    });
-    const json = (await res.json().catch(() => ({}))) as {
-      error?: string;
-      actionArea?: ActionAreaData;
-    };
-    if (!res.ok || !json.actionArea) {
-      feedback.setError(json.error || 'No se pudo cambiar la visibilidad.');
-      return;
+    try {
+      const res = await fetch('/api/admin/action-areas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: area.id, isActive: !area.isActive }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        actionArea?: ActionAreaData;
+      };
+      if (!res.ok || !json.actionArea) {
+        feedback.setError(json.error || 'No se pudo cambiar la visibilidad.');
+        return;
+      }
+      onActionAreasChange(
+        actionAreas.map(a => (a.id === area.id ? json.actionArea! : a))
+      );
+      feedback.setNotice(
+        json.actionArea.isActive
+          ? `Área "${area.title}" activada en la página de inicio.`
+          : `Área "${area.title}" ocultada del inicio público.`
+      );
+      router.refresh();
+    } catch {
+      feedback.setError('Error de conexión al cambiar la visibilidad del área.');
     }
-    onActionAreasChange(actionAreas.map(a => (a.id === area.id ? json.actionArea! : a)));
-    feedback.setNotice(
-      json.actionArea.isActive
-        ? `Área "${area.title}" activada en la página de inicio.`
-        : `Área "${area.title}" ocultada del inicio público.`
-    );
-    router.refresh();
   }
 
   async function handleConfirmDelete() {
@@ -177,6 +177,8 @@ export function ActionAreasTab({
       feedback.setNotice(`Área "${deleteTarget.title}" eliminada definitivamente.`);
       setDeleteTarget(null);
       router.refresh();
+    } catch {
+      feedback.setError('Error de conexión con el servidor al eliminar el área.');
     } finally {
       setDeleting(false);
     }
@@ -300,10 +302,15 @@ export function ActionAreasTab({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="area-title"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Título *
             </label>
             <input
+              id="area-title"
+              name="title"
               required
               value={title}
               onChange={e => {
@@ -319,10 +326,15 @@ export function ActionAreasTab({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="area-sort-order"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Orden
             </label>
             <input
+              id="area-sort-order"
+              name="sortOrder"
               type="number"
               min={0}
               max={999}
@@ -335,10 +347,15 @@ export function ActionAreasTab({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="area-slug"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Slug identificador *
             </label>
             <input
+              id="area-slug"
+              name="slug"
               required
               value={slug}
               onChange={e => {
@@ -351,10 +368,15 @@ export function ActionAreasTab({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="area-href"
+              className="mb-1 block text-xs font-semibold text-espresso"
+            >
               Enlace de botón “Saber más” *
             </label>
             <input
+              id="area-href"
+              name="href"
               required
               value={href}
               onChange={e => setHref(e.target.value)}
@@ -365,10 +387,15 @@ export function ActionAreasTab({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold text-espresso">
+          <label
+            htmlFor="area-description"
+            className="mb-1 block text-xs font-semibold text-espresso"
+          >
             Descripción (mín. 10 caracteres) *
           </label>
           <textarea
+            id="area-description"
+            name="description"
             required
             rows={3}
             value={description}
@@ -409,6 +436,9 @@ export function ActionAreasTab({
 
             <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <input
+                id="area-image-url"
+                name="imageUrl"
+                aria-label="URL de imagen del área de acción"
                 required
                 placeholder="URL de imagen"
                 value={imageUrl}
@@ -416,6 +446,9 @@ export function ActionAreasTab({
                 className="w-full min-w-0 rounded-lg border border-taupe bg-surface px-3 py-2 text-sm text-ink"
               />
               <input
+                id="area-image-alt"
+                name="imageAlt"
+                aria-label="Texto alternativo descriptivo (alt)"
                 required
                 placeholder="Texto alternativo descriptivo (alt)"
                 value={imageAlt}
@@ -426,8 +459,13 @@ export function ActionAreasTab({
           </div>
         </div>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso">
+        <label
+          htmlFor="area-is-active"
+          className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-espresso"
+        >
           <input
+            id="area-is-active"
+            name="isActive"
             type="checkbox"
             checked={isActive}
             onChange={e => setIsActive(e.target.checked)}

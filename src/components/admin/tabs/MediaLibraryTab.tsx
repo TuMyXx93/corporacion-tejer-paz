@@ -53,18 +53,15 @@ export function MediaLibraryTab({
   const [migrating, setMigrating] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
-  // Add video URL form
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [savingVideo, setSavingVideo] = useState(false);
 
-  // Inline edit metadata
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editAlt, setEditAlt] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<MediaAssetData | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -182,6 +179,8 @@ export function MediaLibraryTab({
       setVideoUrl('');
       setVideoTitle('');
       feedback.setNotice(`Enlace de ${parsed.providerLabel} guardado en biblioteca.`);
+    } catch {
+      feedback.setError('Error de conexión al registrar el enlace de video.');
     } finally {
       setSavingVideo(false);
     }
@@ -230,6 +229,8 @@ export function MediaLibraryTab({
           `Sincronización completada: ${json.syncedCount ?? 0} archivo(s) nuevos importados desde Vercel Blob.`
         );
       }
+    } catch {
+      feedback.setError('Error de conexión al sincronizar con Vercel Blob.');
     } finally {
       setSyncing(false);
       setMigrating(false);
@@ -260,6 +261,8 @@ export function MediaLibraryTab({
       onAssetsChange(assets.map(a => (a.id === assetId ? json.asset! : a)));
       setEditingId(null);
       feedback.setNotice('Título y texto alternativo actualizados.');
+    } catch {
+      feedback.setError('Error de conexión al actualizar metadatos.');
     } finally {
       setSavingEdit(false);
     }
@@ -281,6 +284,8 @@ export function MediaLibraryTab({
       onAssetsChange(assets.filter(a => a.id !== deleteTarget.id));
       feedback.setNotice(`Recurso "${deleteTarget.filename}" eliminado correctamente.`);
       setDeleteTarget(null);
+    } catch {
+      feedback.setError('Error de conexión al eliminar el recurso.');
     } finally {
       setDeleting(false);
     }
@@ -321,6 +326,7 @@ export function MediaLibraryTab({
           )}
 
           <label
+            htmlFor="media-library-upload"
             className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-umber/40 bg-cream px-4 py-6 text-center transition-colors hover:border-umber hover:bg-butter/40 ${
               uploading || !storageConfigured ? 'cursor-not-allowed opacity-60' : ''
             }`}
@@ -336,6 +342,8 @@ export function MediaLibraryTab({
               4.5 MB
             </span>
             <input
+              id="media-library-upload"
+              name="mediaFile"
               type="file"
               accept="image/jpeg,image/png,image/webp,image/avif,application/pdf"
               disabled={uploading || !storageConfigured}
@@ -384,10 +392,15 @@ export function MediaLibraryTab({
 
           <form onSubmit={handleRegisterVideo} className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="media-video-url"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Enlace de YouTube o Vimeo (https://) *
               </label>
               <input
+                id="media-video-url"
+                name="videoUrl"
                 type="url"
                 required
                 value={videoUrl}
@@ -398,10 +411,15 @@ export function MediaLibraryTab({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-espresso">
+              <label
+                htmlFor="media-video-title"
+                className="mb-1 block text-xs font-semibold text-espresso"
+              >
                 Título del video
               </label>
               <input
+                id="media-video-title"
+                name="videoTitle"
                 type="text"
                 value={videoTitle}
                 onChange={e => setVideoTitle(e.target.value)}
@@ -455,6 +473,9 @@ export function MediaLibraryTab({
               aria-hidden="true"
             />
             <input
+              id="media-library-search"
+              name="mediaSearch"
+              aria-label="Buscar archivo o texto alternativo"
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -532,6 +553,9 @@ export function MediaLibraryTab({
                     {isEditing ? (
                       <div className="space-y-2">
                         <input
+                          id={`media-edit-title-${asset.id}`}
+                          name={`mediaEditTitle-${asset.id}`}
+                          aria-label="Título visible del recurso"
                           type="text"
                           value={editTitle}
                           onChange={e => setEditTitle(e.target.value)}
@@ -539,6 +563,9 @@ export function MediaLibraryTab({
                           className="w-full rounded-lg border border-taupe bg-surface px-2.5 py-1.5 text-xs text-ink"
                         />
                         <input
+                          id={`media-edit-alt-${asset.id}`}
+                          name={`mediaEditAlt-${asset.id}`}
+                          aria-label="Texto alternativo del recurso"
                           type="text"
                           value={editAlt}
                           onChange={e => setEditAlt(e.target.value)}

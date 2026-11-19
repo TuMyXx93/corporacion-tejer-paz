@@ -146,7 +146,12 @@ export function AdminDashboardClient({
       key: 'messages',
       label: 'Mensajes',
       icon: Inbox,
-      badge: unreadCount > 0 ? `${unreadCount} nuevo` : activeMessageCount,
+      badge:
+        unreadCount > 0
+          ? unreadCount === 1
+            ? '1 nuevo'
+            : `${unreadCount} nuevos`
+          : activeMessageCount,
       badgeUrgent: unreadCount > 0,
     },
     { key: 'settings', label: 'Configuración', icon: Settings },

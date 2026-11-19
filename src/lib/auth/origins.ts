@@ -60,3 +60,21 @@ export function resolveTrustedOrigins(env: NodeJS.ProcessEnv = process.env): str
   }
   return [...unique];
 }
+
+export function resolvePublicSiteUrl(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.VERCEL_ENV === 'preview') {
+    return (
+      normalizeOrigin(env.NEXT_PUBLIC_APP_URL) ??
+      normalizeOrigin(env.VERCEL_BRANCH_URL, true) ??
+      normalizeOrigin(env.VERCEL_URL, true) ??
+      'http://localhost:3000'
+    );
+  }
+
+  return (
+    normalizeOrigin(env.NEXT_PUBLIC_APP_URL) ??
+    normalizeOrigin(env.VERCEL_PROJECT_PRODUCTION_URL, true) ??
+    normalizeOrigin(env.VERCEL_URL, true) ??
+    'http://localhost:3000'
+  );
+}

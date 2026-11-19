@@ -164,6 +164,9 @@ export function MediaGalleryEditor({
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
+              id="gallery-video-url"
+              name="galleryVideoUrl"
+              aria-label="Enlace de video de YouTube o Vimeo"
               type="url"
               value={videoUrlInput}
               onChange={e => setVideoUrlInput(e.target.value)}
@@ -171,6 +174,9 @@ export function MediaGalleryEditor({
               className="w-full min-w-0 rounded-lg border border-taupe bg-surface px-3 py-2 text-sm text-ink focus:border-umber"
             />
             <input
+              id="gallery-video-title"
+              name="galleryVideoTitle"
+              aria-label="Título descriptivo del video"
               type="text"
               value={videoTitleInput}
               onChange={e => setVideoTitleInput(e.target.value)}
@@ -251,6 +257,9 @@ export function MediaGalleryEditor({
 
                   <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
                     <input
+                      id={`gallery-item-title-${item.id}`}
+                      name={`galleryItemTitle-${item.id}`}
+                      aria-label={`Título del elemento ${idx + 1}`}
                       type="text"
                       value={item.title || ''}
                       placeholder="Título o pie de foto"
@@ -263,6 +272,13 @@ export function MediaGalleryEditor({
                       className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-2.5 py-1.5 text-xs text-ink"
                     />
                     <input
+                      id={`gallery-item-alt-${item.id}`}
+                      name={`galleryItemAlt-${item.id}`}
+                      aria-label={
+                        item.type === 'image'
+                          ? `Texto alternativo de la imagen ${idx + 1}`
+                          : `Descripción del video ${idx + 1}`
+                      }
                       type="text"
                       value={item.alt || ''}
                       placeholder={
@@ -342,6 +358,9 @@ export function MediaGalleryEditor({
 
                 <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
                   <input
+                    id={`gallery-doc-title-${doc.id}`}
+                    name={`galleryDocTitle-${doc.id}`}
+                    aria-label={`Título del documento PDF ${idx + 1}`}
                     type="text"
                     value={doc.title}
                     placeholder="Título visible del documento"
@@ -354,6 +373,9 @@ export function MediaGalleryEditor({
                     className="w-full min-w-0 rounded-lg border border-taupe bg-cream px-2.5 py-1.5 text-xs text-ink"
                   />
                   <input
+                    id={`gallery-doc-desc-${doc.id}`}
+                    name={`galleryDocDesc-${doc.id}`}
+                    aria-label={`Descripción del documento PDF ${idx + 1}`}
                     type="text"
                     value={doc.description || ''}
                     placeholder="Descripción corta para el visitante"

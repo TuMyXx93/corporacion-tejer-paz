@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { AlertTriangle, ShieldAlert, X } from 'lucide-react';
 
 interface ConfirmDialogProps {
@@ -10,7 +10,6 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: 'danger' | 'primary';
-  requireConfirmText?: string;
   reasonLabel?: string;
   reasonPlaceholder?: string;
   reasonValue?: string;
@@ -31,7 +30,6 @@ function ConfirmDialogInner({
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
   variant = 'danger',
-  requireConfirmText,
   reasonLabel,
   reasonPlaceholder,
   reasonValue,
@@ -40,8 +38,6 @@ function ConfirmDialogInner({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const [typedText, setTypedText] = useState('');
-
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape' && !loading) {
@@ -51,9 +47,6 @@ function ConfirmDialogInner({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [loading, onCancel]);
-
-  const confirmDisabled =
-    loading || (Boolean(requireConfirmText) && typedText.trim() !== requireConfirmText);
 
   return (
     <div
@@ -71,7 +64,7 @@ function ConfirmDialogInner({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <span
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                 variant === 'danger' ? 'bg-red-100 text-red-700' : 'bg-butter text-umber'
@@ -83,7 +76,7 @@ function ConfirmDialogInner({
                 <ShieldAlert className="h-5 w-5" aria-hidden="true" />
               )}
             </span>
-            <div>
+            <div className="min-w-0">
               <h2
                 id="confirm-dialog-title"
                 className="font-display text-lg font-bold text-espresso"
@@ -92,7 +85,7 @@ function ConfirmDialogInner({
               </h2>
               <p
                 id="confirm-dialog-description"
-                className="mt-1.5 text-sm leading-relaxed text-earth"
+                className="mt-1.5 text-sm leading-relaxed break-words text-earth"
               >
                 {description}
               </p>
@@ -112,29 +105,19 @@ function ConfirmDialogInner({
 
         {onReasonChange && (
           <div className="mt-4">
-            <label className="mb-1.5 block text-xs font-semibold text-espresso">
+            <label
+              htmlFor="confirm-dialog-reason"
+              className="mb-1.5 block text-xs font-semibold text-espresso"
+            >
               {reasonLabel || 'Motivo (opcional)'}
             </label>
             <input
+              id="confirm-dialog-reason"
+              name="confirmDialogReason"
               type="text"
               value={reasonValue ?? ''}
               onChange={e => onReasonChange(e.target.value)}
               placeholder={reasonPlaceholder || 'Especifica un motivo...'}
-              className="w-full rounded-lg border border-taupe bg-cream px-3 py-2 text-sm text-ink focus:border-umber"
-            />
-          </div>
-        )}
-
-        {requireConfirmText && (
-          <div className="mt-4">
-            <label className="mb-1.5 block text-xs font-semibold text-espresso">
-              Escribe <code className="rounded bg-sand px-1">{requireConfirmText}</code>{' '}
-              para confirmar:
-            </label>
-            <input
-              type="text"
-              value={typedText}
-              onChange={e => setTypedText(e.target.value)}
               className="w-full rounded-lg border border-taupe bg-cream px-3 py-2 text-sm text-ink focus:border-umber"
             />
           </div>
@@ -151,7 +134,7 @@ function ConfirmDialogInner({
           </button>
           <button
             type="button"
-            disabled={confirmDisabled}
+            disabled={loading}
             onClick={onConfirm}
             className={`rounded-lg px-4 py-2 text-sm font-semibold text-cream transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
               variant === 'danger'

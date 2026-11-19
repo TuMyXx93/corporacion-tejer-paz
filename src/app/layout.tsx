@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Public_Sans, Syne } from 'next/font/google';
 import { DEFAULT_SITE_SETTINGS } from '@/data/default-content';
+import { resolvePublicSiteUrl } from '@/lib/auth/origins';
 import './globals.css';
 
 const syne = Syne({
@@ -18,7 +19,7 @@ const publicSans = Public_Sans({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const siteUrl = resolvePublicSiteUrl();
 
 export const viewport: Viewport = {
   themeColor: '#3B2816',

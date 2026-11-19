@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trash2,
 } from 'lucide-react';
+import { formatDateTimeEs } from '@/lib/format';
 import { ConfirmDialog } from '../ConfirmDialog';
 import type { AdminFeedbackHandlers, ContactMessageRow } from '../types';
 
@@ -56,17 +57,6 @@ const STATUS_STYLE: Record<
     borderLeftClass: 'border-l-earth',
   },
 };
-
-function formatMessageDate(isoDate: string): string {
-  try {
-    return new Intl.DateTimeFormat('es-CO', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(isoDate));
-  } catch {
-    return isoDate;
-  }
-}
 
 export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTabProps) {
   const [filter, setFilter] = useState<InboxFilter>('active');
@@ -114,6 +104,8 @@ export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTa
       onMessagesChange(messages.map(m => (m.id === id ? { ...m, status } : m)));
       const label = STATUS_STYLE[status]?.label || status;
       feedback.setNotice(`Mensaje marcado como "${label}".`);
+    } catch {
+      feedback.setError('Error de conexión al actualizar el estado del mensaje.');
     } finally {
       setUpdatingId(null);
     }
@@ -137,6 +129,8 @@ export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTa
         `Mensaje de ${deleteTarget.firstName} eliminado definitivamente.`
       );
       setDeleteTarget(null);
+    } catch {
+      feedback.setError('Error de conexión al eliminar el mensaje.');
     } finally {
       setDeleting(false);
     }
@@ -161,6 +155,9 @@ export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTa
             aria-hidden="true"
           />
           <input
+            id="messages-search"
+            name="messagesSearch"
+            aria-label="Buscar mensajes por remitente o asunto"
             type="search"
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -276,7 +273,7 @@ export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTa
                         {style.label}
                       </span>
                       <span className="text-xs text-earth">
-                        {formatMessageDate(msg.createdAt)}
+                        {formatDateTimeEs(msg.createdAt)}
                       </span>
                       {msg.emailSent && (
                         <span className="rounded-full bg-butter px-2 py-0.5 text-[11px] font-semibold text-umber">
@@ -303,7 +300,7 @@ export function MessagesTab({ messages, onMessagesChange, feedback }: MessagesTa
                   </a>
                 </div>
 
-                <p className="mt-3 rounded-lg border border-taupe/70 bg-surface p-3.5 text-sm leading-relaxed text-ink whitespace-pre-line">
+                <p className="mt-3 rounded-lg border border-taupe/70 bg-surface p-3.5 text-sm leading-relaxed break-words whitespace-pre-line text-ink">
                   {msg.message}
                 </p>
 

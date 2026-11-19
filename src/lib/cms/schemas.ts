@@ -171,7 +171,11 @@ export const updateSiteSettingsSchema = z.object({
   contactEmail: z.string().trim().email().max(254),
   phones: z.array(z.string().trim().min(7).max(30)).min(1).max(5),
   instagramHandle: z.string().trim().min(2).max(60),
-  instagramUrl: z.string().trim().url(),
+  instagramUrl: z
+    .string()
+    .trim()
+    .url()
+    .refine(v => v.startsWith('https://'), 'Usa un enlace https:// válido.'),
   quoteText: z.string().trim().min(10).max(500),
   footerCopyright: z.string().trim().min(5).max(160),
   logoUrl: safeUrlSchema.min(1),

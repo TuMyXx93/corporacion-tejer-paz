@@ -7,13 +7,8 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { DocumentDownloadList } from '@/components/media/DocumentDownloadList';
 import { MixedMediaShowcase } from '@/components/media/MixedMediaShowcase';
 import { getPublicSiteContent } from '@/lib/content/queries';
+import { formatTelHref } from '@/lib/format';
 import { isNextOptimizableImage } from '@/lib/media/embeds';
-
-function formatTelHref(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.startsWith('57')) return `tel:+${digits}`;
-  return `tel:+57${digits}`;
-}
 
 export default async function HomePage() {
   const { settings, sections, actionAreas } = await getPublicSiteContent();
