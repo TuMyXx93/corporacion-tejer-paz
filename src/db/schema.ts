@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
+import type { DocumentAttachment, GalleryMediaItem } from '@/lib/media/embeds';
 
 // ============================================================================
 // Better Auth Core + Admin Plugin Tables
@@ -102,6 +103,8 @@ export const pageSections = pgTable('page_sections', {
   ctaSecondaryLabel: text('cta_secondary_label'),
   ctaSecondaryHref: text('cta_secondary_href'),
   items: jsonb('items').$type<string[]>().notNull().default([]),
+  mediaItems: jsonb('media_items').$type<GalleryMediaItem[]>().notNull().default([]),
+  documents: jsonb('documents').$type<DocumentAttachment[]>().notNull().default([]),
   isVisible: boolean('is_visible').notNull().default(true),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   updatedByUserId: text('updated_by_user_id').references(() => user.id, {
@@ -131,6 +134,8 @@ export const projects = pgTable('projects', {
   description: text('description').notNull().default(''),
   imageUrl: text('image_url').notNull(),
   imageAlt: text('image_alt').notNull(),
+  mediaItems: jsonb('media_items').$type<GalleryMediaItem[]>().notNull().default([]),
+  documents: jsonb('documents').$type<DocumentAttachment[]>().notNull().default([]),
   sortOrder: integer('sort_order').notNull().default(0),
   isPublished: boolean('is_published').notNull().default(true),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -141,10 +146,12 @@ export const mediaAssets = pgTable('media_assets', {
   url: text('url').notNull().unique(),
   pathname: text('pathname').notNull(),
   filename: text('filename').notNull(),
+  title: text('title').notNull().default(''),
   alt: text('alt').notNull().default(''),
   mimeType: text('mime_type').notNull(),
   sizeBytes: integer('size_bytes').notNull(),
-  storageProvider: text('storage_provider').notNull().default('vercel-blob'), // 'vercel-blob' | 'r2' | 'local'
+  assetType: text('asset_type').notNull().default('image'), // 'image' | 'pdf' | 'video'
+  storageProvider: text('storage_provider').notNull().default('vercel-blob'), // 'vercel-blob' | 'r2' | 'local' | 'external'
   uploadedByUserId: text('uploaded_by_user_id').references(() => user.id, {
     onDelete: 'set null',
   }),

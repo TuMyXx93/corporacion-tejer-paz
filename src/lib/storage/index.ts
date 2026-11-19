@@ -1,4 +1,5 @@
 export type StorageProviderName = 'vercel-blob' | 'r2';
+export type MediaAssetType = 'image' | 'pdf' | 'video';
 
 export const ALLOWED_IMAGE_MIME_TYPES = [
   'image/jpeg',
@@ -7,7 +8,16 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
   'image/avif',
 ] as const;
 
+export const ALLOWED_DOCUMENT_MIME_TYPES = ['application/pdf'] as const;
+
+export const ALLOWED_UPLOAD_MIME_TYPES = [
+  ...ALLOWED_IMAGE_MIME_TYPES,
+  ...ALLOWED_DOCUMENT_MIME_TYPES,
+] as const;
+
 export const MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB via direct client upload
+export const MAX_PDF_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB via direct client upload
+export const MAX_UPLOAD_BYTES = MAX_PDF_UPLOAD_BYTES;
 
 export function getActiveStorageProvider(): StorageProviderName {
   return process.env.STORAGE_PROVIDER === 'r2' ? 'r2' : 'vercel-blob';
@@ -36,4 +46,20 @@ export function sanitizeUploadFilename(rawName: string): string {
     .replace(/-+\./g, '.')
     .replace(/^-|-$/g, '');
   return clean || 'imagen-tejer-paz.jpg';
+}
+
+export function inferAssetTypeFromMime(mimeType: string): MediaAssetType {
+  const normalized = mimeType.toLowerCase().trim();
+  if (normalized === 'application/pdf') return 'pdf';
+  if (normalized.startsWith('video/')) return 'video';
+  return 'image';
+}
+
+export function inferMimeFromPathname(pathname: string): string {
+  const clean = pathname.toLowerCase().split('?')[0] ?? '';
+  if (clean.endsWith('.png')) return 'image/png';
+  if (clean.endsWith('.webp')) return 'image/webp';
+  if (clean.endsWith('.avif')) return 'image/avif';
+  if (clean.endsWith('.pdf')) return 'application/pdf';
+  return 'image/jpeg';
 }

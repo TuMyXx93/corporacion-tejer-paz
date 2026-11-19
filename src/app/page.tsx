@@ -1,10 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, Phone } from 'lucide-react';
+import { ArrowRight, Mail, Phone } from 'lucide-react';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { DocumentDownloadList } from '@/components/media/DocumentDownloadList';
+import { MixedMediaShowcase } from '@/components/media/MixedMediaShowcase';
 import { getPublicSiteContent } from '@/lib/content/queries';
+import { isNextOptimizableImage } from '@/lib/media/embeds';
 
 function formatTelHref(phone: string): string {
   const digits = phone.replace(/\D/g, '');
@@ -20,7 +23,7 @@ export default async function HomePage() {
   const contactIntro = sections.contact_intro;
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream text-espresso">
+    <div className="flex min-h-screen flex-col bg-cream text-ink">
       <SiteHeader
         organizationName={settings.organizationName}
         logoUrl={settings.logoUrl}
@@ -38,19 +41,24 @@ export default async function HomePage() {
                   alt={hero.imageAlt || settings.organizationName}
                   fill
                   priority
+                  unoptimized={!isNextOptimizableImage(hero.imageUrl)}
                   sizes="100vw"
                   className="object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-espresso/20 via-transparent to-espresso/80" />
+                <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-transparent to-espresso/90" />
               </div>
             )}
 
             <div className="mx-auto max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-              <h1 className="font-display text-4xl leading-[1.08] font-bold tracking-wide text-cream sm:text-5xl md:text-6xl lg:text-7xl">
+              <div
+                aria-hidden="true"
+                className="mx-auto mb-6 h-1 w-20 rounded-full bg-gold"
+              />
+              <h1 className="font-display text-3xl leading-[1.08] font-bold tracking-wide text-cream sm:text-5xl md:text-6xl lg:text-7xl">
                 {hero.title}
               </h1>
               {hero.subtitle && (
-                <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-cream/90 sm:text-xl">
+                <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-cream/90 sm:text-xl">
                   {hero.subtitle}
                 </p>
               )}
@@ -59,20 +67,32 @@ export default async function HomePage() {
                 {hero.ctaPrimaryLabel && hero.ctaPrimaryHref && (
                   <Link
                     href={hero.ctaPrimaryHref}
-                    className="inline-flex min-w-[210px] items-center justify-center rounded-lg bg-umber px-7 py-3.5 text-sm font-semibold text-cream transition-colors hover:bg-ochre hover:text-ink"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gold/50 bg-umber px-7 py-3.5 text-sm font-semibold text-cream transition-colors hover:bg-gold hover:text-ink sm:w-auto sm:min-w-[215px]"
                   >
-                    {hero.ctaPrimaryLabel}
+                    <span>{hero.ctaPrimaryLabel}</span>
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 )}
                 {hero.ctaSecondaryLabel && hero.ctaSecondaryHref && (
                   <Link
                     href={hero.ctaSecondaryHref}
-                    className="inline-flex min-w-[210px] items-center justify-center rounded-lg border border-cream/80 bg-cream px-7 py-3.5 text-sm font-semibold text-espresso transition-colors hover:bg-butter"
+                    className="inline-flex w-full items-center justify-center rounded-lg border border-cream/80 bg-cream px-7 py-3.5 text-sm font-semibold text-espresso transition-colors hover:bg-butter sm:w-auto sm:min-w-[215px]"
                   >
                     {hero.ctaSecondaryLabel}
                   </Link>
                 )}
               </div>
+
+              {(hero.mediaItems.length > 0 || hero.documents.length > 0) && (
+                <div className="mx-auto mt-12 max-w-4xl space-y-6 rounded-2xl border border-taupe bg-surface p-5 text-left text-ink shadow-md sm:p-7">
+                  {hero.mediaItems.length > 0 && (
+                    <MixedMediaShowcase items={hero.mediaItems} />
+                  )}
+                  {hero.documents.length > 0 && (
+                    <DocumentDownloadList documents={hero.documents} />
+                  )}
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -84,57 +104,82 @@ export default async function HomePage() {
             className="scroll-mt-24 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
           >
             <div className="mx-auto max-w-5xl">
-              <h2 className="text-center font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
-                {mission.title}
-              </h2>
-              <div className="mt-10 rounded-[36px] bg-gold px-6 py-10 text-center shadow-sm sm:px-12 sm:py-14">
+              <div className="text-center">
+                <span className="inline-block rounded-full border border-gold/50 bg-butter px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
+                  Propósito Territorial
+                </span>
+                <h2 className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
+                  {mission.title}
+                </h2>
+              </div>
+
+              <div className="mt-10 rounded-[28px] border border-taupe border-t-4 border-t-gold bg-butter px-6 py-9 text-center shadow-xs sm:rounded-[36px] sm:px-12 sm:py-14">
                 <p className="mx-auto max-w-4xl text-base leading-relaxed text-ink sm:text-lg md:text-xl">
                   {mission.body}
                 </p>
               </div>
+
+              {(mission.mediaItems.length > 0 || mission.documents.length > 0) && (
+                <div className="mx-auto mt-8 max-w-4xl space-y-6 rounded-2xl border border-taupe bg-surface p-5 shadow-xs sm:p-7">
+                  {mission.mediaItems.length > 0 && (
+                    <MixedMediaShowcase items={mission.mediaItems} />
+                  )}
+                  {mission.documents.length > 0 && (
+                    <DocumentDownloadList documents={mission.documents} />
+                  )}
+                </div>
+              )}
             </div>
           </section>
         )}
 
-        {/* Nuestras Áreas de Acción */}
+        {/* Nuestras Áreas de Acción (#areas) */}
         <section
+          id="areas"
           aria-labelledby="areas-de-accion-heading"
-          className="px-4 py-16 sm:px-6 md:py-24 lg:px-8"
+          className="scroll-mt-24 border-y border-taupe/70 bg-sand/55 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
         >
           <div className="mx-auto max-w-6xl">
-            <h2
-              id="areas-de-accion-heading"
-              className="mx-auto max-w-2xl text-center font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl"
-            >
-              Nuestras Áreas de Acción
-            </h2>
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="inline-block rounded-full border border-taupe bg-surface px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
+                Tejido en el Territorio
+              </span>
+              <h2
+                id="areas-de-accion-heading"
+                className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl"
+              >
+                Nuestras Áreas de Acción
+              </h2>
+            </div>
 
-            <div className="mt-14 grid grid-cols-1 gap-12 md:grid-cols-3">
+            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {actionAreas.map(area => (
                 <article
                   key={area.slug}
-                  className="flex flex-col items-center text-center"
+                  className="flex flex-col items-center rounded-2xl border border-taupe bg-surface p-6 text-center shadow-xs transition-shadow hover:shadow-md sm:p-7"
                 >
-                  <div className="relative h-64 w-64 overflow-hidden rounded-full border-4 border-sand shadow-md">
+                  <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-butter ring-2 ring-gold/45 shadow-sm sm:h-56 sm:w-56">
                     <Image
                       src={area.imageUrl}
                       alt={area.imageAlt}
                       fill
-                      sizes="256px"
+                      unoptimized={!isNextOptimizableImage(area.imageUrl)}
+                      sizes="224px"
                       className="object-cover"
                     />
                   </div>
-                  <h3 className="mt-7 font-display text-xl leading-snug font-bold text-espresso sm:text-2xl">
+                  <h3 className="mt-6 font-display text-xl leading-snug font-bold text-espresso sm:text-2xl">
                     {area.title}
                   </h3>
-                  <p className="mt-3 flex-1 text-base leading-relaxed text-espresso/85">
+                  <p className="mt-3 flex-1 text-base leading-relaxed text-earth">
                     {area.description}
                   </p>
                   <Link
                     href={area.href}
-                    className="mt-6 inline-flex items-center justify-center rounded-lg border border-umber bg-cream px-7 py-2.5 text-sm font-semibold text-espresso transition-colors hover:bg-umber hover:text-cream"
+                    className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg border border-umber bg-cream px-6 py-2.5 text-sm font-semibold text-umber transition-colors hover:bg-umber hover:text-cream"
                   >
-                    Saber más
+                    <span>Saber más</span>
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </article>
               ))}
@@ -144,24 +189,42 @@ export default async function HomePage() {
 
         {/* Impacto Comunitario */}
         {communityImpact?.isVisible && (
-          <section className="relative isolate overflow-hidden bg-espresso py-24 text-cream sm:py-32">
+          <section className="relative isolate overflow-hidden bg-espresso py-20 text-cream sm:py-28">
             {communityImpact.imageUrl && (
               <Image
                 src={communityImpact.imageUrl}
                 alt={communityImpact.imageAlt || communityImpact.title}
                 fill
+                unoptimized={!isNextOptimizableImage(communityImpact.imageUrl)}
                 sizes="100vw"
-                className="-z-10 object-cover opacity-55"
+                className="-z-10 object-cover opacity-45"
               />
             )}
-            <div className="absolute inset-0 -z-10 bg-espresso/45" />
-            <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+            <div className="absolute inset-0 -z-10 bg-ink/55" />
+
+            <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+              <div
+                aria-hidden="true"
+                className="mx-auto mb-5 h-1 w-16 rounded-full bg-gold"
+              />
               <h2 className="font-display text-3xl leading-tight font-bold text-cream sm:text-5xl">
                 {communityImpact.title}
               </h2>
-              <p className="mt-6 text-lg leading-relaxed text-cream/95 sm:text-xl">
+              <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-cream/95 sm:text-xl">
                 {communityImpact.body}
               </p>
+
+              {(communityImpact.mediaItems.length > 0 ||
+                communityImpact.documents.length > 0) && (
+                <div className="mt-10 space-y-6 rounded-2xl border border-taupe bg-surface p-5 text-left text-ink shadow-xl sm:p-7">
+                  {communityImpact.mediaItems.length > 0 && (
+                    <MixedMediaShowcase items={communityImpact.mediaItems} />
+                  )}
+                  {communityImpact.documents.length > 0 && (
+                    <DocumentDownloadList documents={communityImpact.documents} />
+                  )}
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -172,41 +235,42 @@ export default async function HomePage() {
             id="contacto"
             className="scroll-mt-24 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
           >
-            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-12 lg:items-start">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <h2 className="font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
+                <span className="inline-block rounded-full border border-gold/50 bg-butter px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
+                  Alianzas y Escucha
+                </span>
+                <h2 className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
                   {contactIntro.title}
                 </h2>
-                <p className="mt-5 text-base leading-relaxed text-espresso/85 sm:text-lg">
+                <p className="mt-4 text-base leading-relaxed text-earth sm:text-lg">
                   {contactIntro.subtitle}
                 </p>
 
-                <div className="mt-8 space-y-4 rounded-2xl border border-taupe/70 bg-sand/60 p-6">
-                  <div className="flex items-start gap-3">
-                    <Mail
-                      className="mt-0.5 h-5 w-5 shrink-0 text-umber"
-                      aria-hidden="true"
-                    />
-                    <div>
-                      <p className="text-xs font-semibold tracking-wider text-espresso/90 uppercase">
+                <div className="mt-8 space-y-5 rounded-2xl border border-taupe bg-surface p-6 shadow-xs">
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-butter text-umber">
+                      <Mail className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold tracking-wider text-earth uppercase">
                         Correo electrónico directo
                       </p>
                       <a
                         href={`mailto:${settings.contactEmail}`}
-                        className="mt-0.5 inline-block text-base font-medium text-espresso underline decoration-umber/60 underline-offset-4 hover:text-umber"
+                        className="mt-0.5 inline-block text-base font-semibold break-all text-espresso underline decoration-gold underline-offset-4 hover:text-umber"
                       >
                         {settings.contactEmail}
                       </a>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <Phone
-                      className="mt-0.5 h-5 w-5 shrink-0 text-umber"
-                      aria-hidden="true"
-                    />
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-butter text-umber">
+                      <Phone className="h-5 w-5" aria-hidden="true" />
+                    </span>
                     <div>
-                      <p className="text-xs font-semibold tracking-wider text-espresso/90 uppercase">
+                      <p className="text-xs font-bold tracking-wider text-earth uppercase">
                         Teléfonos de contacto
                       </p>
                       <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-1">
@@ -214,7 +278,7 @@ export default async function HomePage() {
                           <a
                             key={phone}
                             href={formatTelHref(phone)}
-                            className="text-base font-medium text-espresso underline decoration-umber/60 underline-offset-4 hover:text-umber"
+                            className="text-base font-semibold text-espresso underline decoration-gold underline-offset-4 hover:text-umber"
                           >
                             {phone}
                           </a>
@@ -225,7 +289,7 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-taupe/70 bg-sand/35 p-6 sm:p-8 lg:col-span-7">
+              <div className="rounded-2xl border border-taupe bg-surface p-6 shadow-xs sm:p-8 lg:col-span-7">
                 <ContactForm />
               </div>
             </div>
@@ -233,10 +297,16 @@ export default async function HomePage() {
         )}
 
         {/* Franja de cita institucional */}
-        <section className="bg-butter px-4 py-12 sm:px-6 lg:px-8">
-          <blockquote className="mx-auto max-w-4xl text-center text-base leading-relaxed text-ink italic sm:text-lg">
-            {settings.quoteText}
-          </blockquote>
+        <section className="border-y border-taupe bg-butter px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <div
+              aria-hidden="true"
+              className="mx-auto mb-4 h-0.5 w-16 rounded-full bg-gold"
+            />
+            <blockquote className="text-base leading-relaxed font-medium text-ink italic sm:text-lg">
+              {settings.quoteText}
+            </blockquote>
+          </div>
         </section>
       </main>
 

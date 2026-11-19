@@ -1,10 +1,22 @@
+import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull, or } from 'drizzle-orm';
 import { requireDb } from '@/db';
-import { user } from '@/db/schema';
+import { session, user } from '@/db/schema';
 import { getAuth } from '@/lib/auth';
 import { recordAuditLog, requireApiPermission } from '@/lib/auth/guards';
 import { createAdminUserSchema, updateAdminUserSchema } from '@/lib/cms/schemas';
+
+async function countActiveSuperadmins() {
+  const db = requireDb();
+  const rows = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(
+      and(eq(user.role, 'superadmin'), or(eq(user.banned, false), isNull(user.banned)))
+    );
+  return rows.length;
+}
 
 export async function GET() {
   const guard = await requireApiPermission('user', 'list');
@@ -68,10 +80,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No se pudo crear el usuario.' }, { status: 500 });
   }
 
-  await db
+  const [saved] = await db
     .update(user)
     .set({ role: parsed.data.role, emailVerified: true })
-    .where(eq(user.id, created.user.id));
+    .where(eq(user.id, created.user.id))
+    .returning({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      banned: user.banned,
+      banReason: user.banReason,
+      createdAt: user.createdAt,
+    });
 
   await recordAuditLog({
     actor: guard.actor,
@@ -84,21 +105,13 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       ok: true,
-      user: {
-        id: created.user.id,
-        name: parsed.data.name,
-        email: normalizedEmail,
-        role: parsed.data.role,
-      },
+      user: saved,
     },
     { status: 201 }
   );
 }
 
 export async function PATCH(request: Request) {
-  const guard = await requireApiPermission('user', 'set-role');
-  if (!guard.ok) return guard.response;
-
   const body = await request.json().catch(() => null);
   const parsed = updateAdminUserSchema.safeParse(body);
   if (!parsed.success) {
@@ -108,7 +121,17 @@ export async function PATCH(request: Request) {
     );
   }
 
-  if (parsed.data.userId === guard.actor.id) {
+  const requiredAction = parsed.data.newPassword
+    ? 'set-password'
+    : parsed.data.banned !== undefined
+      ? 'ban'
+      : 'set-role';
+
+  const guard = await requireApiPermission('user', requiredAction);
+  if (!guard.ok) return guard.response;
+
+  const isSelf = parsed.data.userId === guard.actor.id;
+  if (isSelf && (parsed.data.role !== undefined || parsed.data.banned !== undefined)) {
     return NextResponse.json(
       { error: 'No puedes modificar tu propio rol ni desactivar tu propia cuenta.' },
       { status: 400 }
@@ -116,11 +139,47 @@ export async function PATCH(request: Request) {
   }
 
   const db = requireDb();
+  const [targetUser] = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      banned: user.banned,
+    })
+    .from(user)
+    .where(eq(user.id, parsed.data.userId))
+    .limit(1);
+
+  if (!targetUser) {
+    return NextResponse.json({ error: 'Usuario no encontrado.' }, { status: 404 });
+  }
+
+  const targetIsActiveSuperadmin = targetUser.role === 'superadmin' && !targetUser.banned;
+  const wouldRemoveSuperadminPrivilege =
+    parsed.data.role === 'admin' || parsed.data.banned === true;
+
+  if (targetIsActiveSuperadmin && wouldRemoveSuperadminPrivilege) {
+    const activeCount = await countActiveSuperadmins();
+    if (activeCount <= 1) {
+      return NextResponse.json(
+        { error: 'No puedes degradar ni suspender al último superadministrador activo.' },
+        { status: 400 }
+      );
+    }
+  }
+
   const updates: Partial<typeof user.$inferInsert> = {
     updatedAt: new Date(),
   };
+  if (parsed.data.name !== undefined) updates.name = parsed.data.name;
   if (parsed.data.role !== undefined) updates.role = parsed.data.role;
-  if (parsed.data.banned !== undefined) updates.banned = parsed.data.banned;
+  if (parsed.data.banned !== undefined) {
+    updates.banned = parsed.data.banned;
+    if (!parsed.data.banned) {
+      updates.banReason = null;
+    }
+  }
   if (parsed.data.banReason !== undefined) updates.banReason = parsed.data.banReason;
 
   const [updated] = await db
@@ -133,19 +192,97 @@ export async function PATCH(request: Request) {
       email: user.email,
       role: user.role,
       banned: user.banned,
+      banReason: user.banReason,
+      createdAt: user.createdAt,
     });
 
-  if (!updated) {
-    return NextResponse.json({ error: 'Usuario no encontrado.' }, { status: 404 });
+  if (parsed.data.banned === true) {
+    await db.delete(session).where(eq(session.userId, parsed.data.userId));
   }
+
+  if (parsed.data.newPassword) {
+    const auth = getAuth();
+    await auth.api.setUserPassword({
+      body: {
+        userId: parsed.data.userId,
+        newPassword: parsed.data.newPassword,
+      },
+      headers: await headers(),
+    });
+  }
+
+  const changeParts: string[] = [];
+  if (parsed.data.name !== undefined) changeParts.push(`nombre="${updated.name}"`);
+  if (parsed.data.role !== undefined) changeParts.push(`rol=${updated.role}`);
+  if (parsed.data.banned !== undefined) {
+    changeParts.push(parsed.data.banned ? 'suspendido' : 'reactivado');
+  }
+  if (parsed.data.newPassword) changeParts.push('contraseña restablecida');
 
   await recordAuditLog({
     actor: guard.actor,
-    action: 'user.update',
+    action: parsed.data.newPassword ? 'user.set_password' : 'user.update',
     resourceType: 'user',
     resourceId: updated.id,
-    summary: `Usuario actualizado (${updated.role}, banned=${String(updated.banned)})`,
+    summary: `Usuario ${updated.email} actualizado (${changeParts.join(', ') || 'sin cambios'})`,
   });
 
   return NextResponse.json({ ok: true, user: updated });
+}
+
+export async function DELETE(request: Request) {
+  const guard = await requireApiPermission('user', 'delete');
+  if (!guard.ok) return guard.response;
+
+  const { searchParams } = new URL(request.url);
+  const targetId = searchParams.get('id')?.trim() ?? '';
+  if (!targetId) {
+    return NextResponse.json({ error: 'ID de usuario inválido.' }, { status: 400 });
+  }
+
+  if (targetId === guard.actor.id) {
+    return NextResponse.json(
+      { error: 'No puedes eliminar tu propia cuenta activa.' },
+      { status: 400 }
+    );
+  }
+
+  const db = requireDb();
+  const [targetUser] = await db
+    .select({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      banned: user.banned,
+    })
+    .from(user)
+    .where(eq(user.id, targetId))
+    .limit(1);
+
+  if (!targetUser) {
+    return NextResponse.json({ error: 'Usuario no encontrado.' }, { status: 404 });
+  }
+
+  if (targetUser.role === 'superadmin' && !targetUser.banned) {
+    const activeCount = await countActiveSuperadmins();
+    if (activeCount <= 1) {
+      return NextResponse.json(
+        { error: 'No puedes eliminar al último superadministrador activo.' },
+        { status: 400 }
+      );
+    }
+  }
+
+  await db.delete(session).where(eq(session.userId, targetId));
+  await db.delete(user).where(eq(user.id, targetId));
+
+  await recordAuditLog({
+    actor: guard.actor,
+    action: 'user.delete',
+    resourceType: 'user',
+    resourceId: targetId,
+    summary: `Cuenta eliminada: ${targetUser.email} (${targetUser.role})`,
+  });
+
+  return NextResponse.json({ ok: true });
 }

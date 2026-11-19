@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import { isNextOptimizableImage } from '@/lib/media/embeds';
 
 interface SiteHeaderProps {
   organizationName: string;
@@ -14,8 +15,9 @@ interface SiteHeaderProps {
 
 const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
+  { href: '/#nuestra-mision', label: 'Misión' },
+  { href: '/#areas', label: 'Áreas' },
   { href: '/proyectos', label: 'Proyectos' },
-  { href: '/#contacto', label: 'Contacto' },
 ];
 
 export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderProps) {
@@ -23,26 +25,27 @@ export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderPro
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-taupe/50 bg-cream/95 backdrop-blur">
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-taupe bg-surface/95 backdrop-blur">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-3 focus-visible:rounded-md"
+          className="flex shrink-0 items-center gap-3 focus-visible:rounded-md"
           aria-label={organizationName}
         >
           <Image
             src={logoUrl}
             alt={logoAlt}
-            width={136}
-            height={57}
+            width={144}
+            height={60}
             priority
+            unoptimized={!isNextOptimizableImage(logoUrl)}
             className="h-11 w-auto object-contain sm:h-12"
           />
         </Link>
 
         <nav
           aria-label="Navegación principal"
-          className="hidden items-center gap-8 md:flex"
+          className="hidden items-center gap-7 md:flex"
         >
           {NAV_LINKS.map(item => {
             const isActive =
@@ -54,9 +57,9 @@ export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderPro
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`text-base font-medium transition-colors hover:text-umber ${
+                className={`text-sm font-semibold transition-colors hover:text-umber lg:text-base ${
                   isActive
-                    ? 'border-b-2 border-umber pb-1 text-espresso'
+                    ? 'border-b-2 border-gold pb-1 text-espresso'
                     : 'text-espresso/85'
                 }`}
               >
@@ -64,6 +67,13 @@ export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderPro
               </Link>
             );
           })}
+
+          <Link
+            href="/#contacto"
+            className="inline-flex items-center justify-center rounded-lg bg-umber px-4 py-2.5 text-sm font-semibold text-cream transition-colors hover:bg-espresso"
+          >
+            Contáctanos
+          </Link>
         </nav>
 
         <button
@@ -72,7 +82,7 @@ export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderPro
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-taupe text-espresso transition-colors hover:bg-sand md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-taupe bg-cream text-espresso transition-colors hover:bg-sand md:hidden"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -82,20 +92,29 @@ export function SiteHeader({ organizationName, logoUrl, logoAlt }: SiteHeaderPro
         <nav
           id="mobile-nav"
           aria-label="Navegación móvil"
-          className="border-t border-taupe/60 bg-cream px-4 py-4 md:hidden"
+          className="border-t border-taupe bg-surface px-4 py-4 md:hidden"
         >
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-1.5">
             {NAV_LINKS.map(item => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-base font-medium text-espresso hover:bg-sand"
+                  className="block rounded-lg px-3.5 py-2.5 text-base font-medium text-espresso hover:bg-sand"
                 >
                   {item.label}
                 </Link>
               </li>
             ))}
+            <li className="pt-2">
+              <Link
+                href="/#contacto"
+                onClick={() => setOpen(false)}
+                className="block rounded-lg bg-umber px-4 py-2.5 text-center text-base font-semibold text-cream hover:bg-espresso"
+              >
+                Contáctanos
+              </Link>
+            </li>
           </ul>
         </nav>
       )}

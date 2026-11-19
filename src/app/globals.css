@@ -1,17 +1,23 @@
 @import 'tailwindcss';
 
 @theme inline {
-  /* Paleta territorial oficial — extraída de Corporación Tejer Paz */
-  --color-cream: #fdf9f2;
-  --color-sand: #ebe6df;
-  --color-taupe: #c8c1b8;
-  --color-earth: #8b8075;
-  --color-espresso: #4d3f32;
-  --color-umber: #6a543d;
-  --color-ink: #2e241c;
-  --color-gold: #ffd32e;
-  --color-ochre: #b58c61;
-  --color-butter: #fff0b1;
+  /* Sistema 60-30-10 derivado del logotipo oficial de Corporación Tejer Paz */
+  /* 60% Neutrales cálidos dominantes (alabastro, lienzo, lino) */
+  --color-cream: #fcfbf8;
+  --color-surface: #ffffff;
+  --color-sand: #f3eee5;
+  --color-taupe: #e2d9c9;
+
+  /* 30% Tierra tejida y bronce institucional (textos, encabezados, CTAs) */
+  --color-ink: #22170c;
+  --color-espresso: #3b2816;
+  --color-umber: #6e4713;
+  --color-earth: #6b5b4a;
+
+  /* 10% Acentos de oro artesanal tejido */
+  --color-gold: #c68e28;
+  --color-ochre: #9a6b1b;
+  --color-butter: #fbf3df;
 
   /* Tipografía autoalojada vía next/font/google */
   --font-display: var(--font-syne), 'Syne', ui-sans-serif, system-ui, sans-serif;

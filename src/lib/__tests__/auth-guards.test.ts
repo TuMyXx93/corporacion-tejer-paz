@@ -55,6 +55,17 @@ describe('Server Auth & RBAC Guards', () => {
     });
     expect(await getServerActor()).toBeNull();
 
+    mockGetSession.mockResolvedValueOnce({
+      user: {
+        id: 'u-banned',
+        name: 'Suspended',
+        email: 's@test.org',
+        role: 'admin',
+        banned: true,
+      },
+    });
+    expect(await getServerActor()).toBeNull();
+
     mockGetSession.mockRejectedValueOnce(new Error('session failure'));
     expect(await getServerActor()).toBeNull();
   });

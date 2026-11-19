@@ -21,7 +21,7 @@ const publicSans = Public_Sans({
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 export const viewport: Viewport = {
-  themeColor: '#4D3F32',
+  themeColor: '#3B2816',
   width: 'device-width',
   initialScale: 1,
 };
@@ -72,6 +72,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      data-scroll-behavior="smooth"
       className={`${syne.variable} ${publicSans.variable}`}
       suppressHydrationWarning
     >

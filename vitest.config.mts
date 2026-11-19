@@ -14,6 +14,7 @@ export default defineConfig({
         'src/lib/auth/guards.ts',
         'src/lib/cms/schemas.ts',
         'src/lib/contact/schema.ts',
+        'src/lib/media/embeds.ts',
         'src/lib/security/rateLimiter.ts',
         'src/lib/storage/index.ts',
         'src/app/api/contact/route.ts',

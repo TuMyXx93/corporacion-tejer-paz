@@ -25,6 +25,7 @@ export async function getServerActor(): Promise<AuthenticatedActor | null> {
       headers: await headers(),
     });
     if (!session?.user) return null;
+    if (session.user.banned) return null;
     const role = session.user.role;
     if (!isAppRole(role)) return null;
     return {

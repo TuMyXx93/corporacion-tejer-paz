@@ -5,9 +5,10 @@ import { requireDb } from '@/db';
 import { mediaAssets } from '@/db/schema';
 import { recordAuditLog, requireApiPermission } from '@/lib/auth/guards';
 import {
-  ALLOWED_IMAGE_MIME_TYPES,
-  MAX_IMAGE_UPLOAD_BYTES,
+  ALLOWED_UPLOAD_MIME_TYPES,
+  MAX_UPLOAD_BYTES,
   getActiveStorageProvider,
+  inferAssetTypeFromMime,
   isStorageConfigured,
 } from '@/lib/storage';
 
@@ -20,7 +21,7 @@ export async function GET() {
     .select()
     .from(mediaAssets)
     .orderBy(desc(mediaAssets.createdAt))
-    .limit(100);
+    .limit(200);
 
   return NextResponse.json({
     provider: getActiveStorageProvider(),
@@ -63,8 +64,8 @@ export async function POST(request: Request) {
           throw new Error('UNAUTHORIZED');
         }
         return {
-          allowedContentTypes: [...ALLOWED_IMAGE_MIME_TYPES],
-          maximumSizeInBytes: MAX_IMAGE_UPLOAD_BYTES,
+          allowedContentTypes: [...ALLOWED_UPLOAD_MIME_TYPES],
+          maximumSizeInBytes: MAX_UPLOAD_BYTES,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             actorId: guard.actor.id,
@@ -81,16 +82,19 @@ export async function POST(request: Request) {
                 actorRole?: string;
               })
             : {};
+          const filename = blob.pathname.split('/').pop() || blob.pathname;
           const db = requireDb();
           await db
             .insert(mediaAssets)
             .values({
               url: blob.url,
               pathname: blob.pathname,
-              filename: blob.pathname.split('/').pop() || blob.pathname,
+              filename,
+              title: filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
               alt: '',
               mimeType: blob.contentType,
               sizeBytes: 0,
+              assetType: inferAssetTypeFromMime(blob.contentType),
               storageProvider: 'vercel-blob',
               uploadedByUserId: parsed.actorId ?? null,
             })
