@@ -58,4 +58,15 @@ test.describe('Corporación Tejer Paz — Smoke & Accessibility', () => {
     const response = await request.get('/api/admin/users');
     expect([401, 503]).toContain(response.status());
   });
+
+  test('CSP allows Vercel Blob client upload endpoints in connect-src', async ({
+    request,
+  }) => {
+    const response = await request.get('/');
+    const csp = response.headers()['content-security-policy'] ?? '';
+    expect(csp).toContain('connect-src');
+    expect(csp).toContain('https://vercel.com/api/blob');
+    expect(csp).toContain('https://vercel.com/api/blob/');
+    expect(csp).toContain('https://*.public.blob.vercel-storage.com');
+  });
 });

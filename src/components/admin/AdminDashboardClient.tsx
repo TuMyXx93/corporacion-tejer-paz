@@ -173,7 +173,8 @@ export function AdminDashboardClient({
   }
 
   async function handleDirectImageUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     clearFeedback();
     setUploading(true);
@@ -195,6 +196,7 @@ export function AdminDashboardClient({
       );
     } finally {
       setUploading(false);
+      input.value = '';
     }
   }
 
