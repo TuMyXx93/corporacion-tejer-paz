@@ -1,33 +1,17 @@
 import { NextResponse } from 'next/server';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
-import { desc } from 'drizzle-orm';
 import { requireDb } from '@/db';
 import { mediaAssets } from '@/db/schema';
 import { recordAuditLog, requireApiPermission } from '@/lib/auth/guards';
 import {
+  ALLOWED_DOCUMENT_MIME_TYPES,
   ALLOWED_IMAGE_MIME_TYPES,
   MAX_IMAGE_UPLOAD_BYTES,
+  MAX_PDF_UPLOAD_BYTES,
   getActiveStorageProvider,
+  inferAssetTypeFromMime,
   isStorageConfigured,
 } from '@/lib/storage';
-
-export async function GET() {
-  const guard = await requireApiPermission('media', 'read');
-  if (!guard.ok) return guard.response;
-
-  const db = requireDb();
-  const rows = await db
-    .select()
-    .from(mediaAssets)
-    .orderBy(desc(mediaAssets.createdAt))
-    .limit(100);
-
-  return NextResponse.json({
-    provider: getActiveStorageProvider(),
-    configured: isStorageConfigured(),
-    assets: rows,
-  });
-}
 
 export async function POST(request: Request) {
   const provider = getActiveStorageProvider();
@@ -62,9 +46,12 @@ export async function POST(request: Request) {
         if (!guard.ok) {
           throw new Error('UNAUTHORIZED');
         }
+        const isPdf = pathname.toLowerCase().endsWith('.pdf');
         return {
-          allowedContentTypes: [...ALLOWED_IMAGE_MIME_TYPES],
-          maximumSizeInBytes: MAX_IMAGE_UPLOAD_BYTES,
+          allowedContentTypes: [
+            ...(isPdf ? ALLOWED_DOCUMENT_MIME_TYPES : ALLOWED_IMAGE_MIME_TYPES),
+          ],
+          maximumSizeInBytes: isPdf ? MAX_PDF_UPLOAD_BYTES : MAX_IMAGE_UPLOAD_BYTES,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             actorId: guard.actor.id,
@@ -81,16 +68,19 @@ export async function POST(request: Request) {
                 actorRole?: string;
               })
             : {};
+          const filename = blob.pathname.split('/').pop() || blob.pathname;
           const db = requireDb();
           await db
             .insert(mediaAssets)
             .values({
               url: blob.url,
               pathname: blob.pathname,
-              filename: blob.pathname.split('/').pop() || blob.pathname,
+              filename,
+              title: filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
               alt: '',
               mimeType: blob.contentType,
               sizeBytes: 0,
+              assetType: inferAssetTypeFromMime(blob.contentType),
               storageProvider: 'vercel-blob',
               uploadedByUserId: parsed.actorId ?? null,
             })

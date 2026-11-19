@@ -77,9 +77,17 @@ async function fetchPublicSiteContent(): Promise<PublicSiteContent> {
         ctaSecondaryLabel: row.ctaSecondaryLabel,
         ctaSecondaryHref: row.ctaSecondaryHref,
         items: Array.isArray(row.items) ? row.items : [],
+        mediaItems: Array.isArray(row.mediaItems) ? row.mediaItems : [],
+        documents: Array.isArray(row.documents) ? row.documents : [],
         isVisible: row.isVisible,
       };
     }
+
+    const mappedProjects: ProjectItemData[] = projectRows.map(row => ({
+      ...row,
+      mediaItems: Array.isArray(row.mediaItems) ? row.mediaItems : [],
+      documents: Array.isArray(row.documents) ? row.documents : [],
+    }));
 
     const settingsRow = settingsRows[0];
     const settings: SiteSettingsData = settingsRow
@@ -104,7 +112,7 @@ async function fetchPublicSiteContent(): Promise<PublicSiteContent> {
       settings,
       sections: mergedSections,
       actionAreas: areaRows.length > 0 ? areaRows : DEFAULT_ACTION_AREAS,
-      projects: projectRows.length > 0 ? projectRows : DEFAULT_PROJECTS,
+      projects: mappedProjects.length > 0 ? mappedProjects : DEFAULT_PROJECTS,
       source: 'database',
     };
   } catch (err) {
@@ -121,7 +129,7 @@ async function fetchPublicSiteContent(): Promise<PublicSiteContent> {
 
 export const getPublicSiteContent = unstable_cache(
   fetchPublicSiteContent,
-  ['public-site-content-v1'],
+  ['public-site-content-v2'],
   {
     revalidate: 300,
     tags: [SITE_CONTENT_CACHE_TAG],

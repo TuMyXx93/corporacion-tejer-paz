@@ -7,9 +7,10 @@ export type AppRole = (typeof APP_ROLES)[number];
 export const permissionStatements = {
   ...defaultStatements,
   section: ['read', 'update'],
+  area: ['read', 'create', 'update', 'delete'],
   project: ['read', 'create', 'update', 'delete'],
   media: ['read', 'create', 'update', 'delete'],
-  message: ['read', 'update'],
+  message: ['read', 'update', 'delete'],
   settings: ['read', 'update'],
   audit: ['read'],
 } as const;
@@ -18,40 +19,44 @@ export const ac = createAccessControl(permissionStatements);
 
 export const adminRole = ac.newRole({
   section: ['read', 'update'],
+  area: ['read', 'create', 'update', 'delete'],
   project: ['read', 'create', 'update', 'delete'],
   media: ['read', 'create', 'update', 'delete'],
-  message: ['read', 'update'],
+  message: ['read', 'update', 'delete'],
   settings: ['read'],
 });
 
 export const superadminRole = ac.newRole({
   ...adminAc.statements,
   section: ['read', 'update'],
+  area: ['read', 'create', 'update', 'delete'],
   project: ['read', 'create', 'update', 'delete'],
   media: ['read', 'create', 'update', 'delete'],
-  message: ['read', 'update'],
+  message: ['read', 'update', 'delete'],
   settings: ['read', 'update'],
   audit: ['read'],
 });
 
 export type AppResource =
-  'section' | 'project' | 'media' | 'message' | 'settings' | 'audit' | 'user';
+  'section' | 'area' | 'project' | 'media' | 'message' | 'settings' | 'audit' | 'user';
 
 const ROLE_MATRIX: Record<AppRole, Record<AppResource, readonly string[]>> = {
   superadmin: {
     section: ['read', 'update'],
+    area: ['read', 'create', 'update', 'delete'],
     project: ['read', 'create', 'update', 'delete'],
     media: ['read', 'create', 'update', 'delete'],
-    message: ['read', 'update'],
+    message: ['read', 'update', 'delete'],
     settings: ['read', 'update'],
     audit: ['read'],
-    user: ['list', 'create', 'set-role', 'ban', 'delete'],
+    user: ['list', 'create', 'set-role', 'ban', 'set-password', 'delete'],
   },
   admin: {
     section: ['read', 'update'],
+    area: ['read', 'create', 'update', 'delete'],
     project: ['read', 'create', 'update', 'delete'],
     media: ['read', 'create', 'update', 'delete'],
-    message: ['read', 'update'],
+    message: ['read', 'update', 'delete'],
     settings: ['read'],
     audit: [],
     user: [],

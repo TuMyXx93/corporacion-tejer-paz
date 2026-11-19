@@ -4,6 +4,7 @@ import { nextCookies } from 'better-auth/next-js';
 import { admin as adminPlugin } from 'better-auth/plugins/admin';
 import { requireDb } from '@/db';
 import * as schema from '@/db/schema';
+import { resolveAuthBaseUrl, resolveTrustedOrigins } from './origins';
 import { ac, adminRole, superadminRole } from './permissions';
 
 function createAuthInstance() {
@@ -11,10 +12,8 @@ function createAuthInstance() {
 
   return betterAuth({
     appName: 'Corporación Tejer Paz',
-    baseURL:
-      process.env.BETTER_AUTH_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000',
+    baseURL: resolveAuthBaseUrl(),
+    trustedOrigins: resolveTrustedOrigins(),
     secret: process.env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
       provider: 'pg',

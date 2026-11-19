@@ -1,3 +1,5 @@
+import type { DocumentAttachment, GalleryMediaItem } from '@/lib/media/embeds';
+
 export interface SiteSettingsData {
   organizationName: string;
   seoTitle: string;
@@ -24,6 +26,8 @@ export interface PageSectionData {
   ctaSecondaryLabel: string | null;
   ctaSecondaryHref: string | null;
   items: string[];
+  mediaItems: GalleryMediaItem[];
+  documents: DocumentAttachment[];
   isVisible: boolean;
 }
 
@@ -48,8 +52,24 @@ export interface ProjectItemData {
   description: string;
   imageUrl: string;
   imageAlt: string;
+  mediaItems: GalleryMediaItem[];
+  documents: DocumentAttachment[];
   sortOrder: number;
   isPublished: boolean;
+}
+
+export interface MediaAssetData {
+  id: number;
+  url: string;
+  pathname: string;
+  filename: string;
+  title: string;
+  alt: string;
+  mimeType: string;
+  sizeBytes: number;
+  assetType: string;
+  storageProvider: string;
+  createdAt: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
@@ -83,6 +103,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: 'Conoce Nuestra Misión',
     ctaSecondaryHref: '#nuestra-mision',
     items: [],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
   mission: {
@@ -97,6 +119,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: null,
     ctaSecondaryHref: null,
     items: [],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
   community_impact: {
@@ -112,6 +136,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: null,
     ctaSecondaryHref: null,
     items: [],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
   contact_intro: {
@@ -127,6 +153,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: null,
     ctaSecondaryHref: null,
     items: [],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
   projects_intro: {
@@ -142,6 +170,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: null,
     ctaSecondaryHref: null,
     items: [],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
   projects_impact: {
@@ -157,6 +187,8 @@ export const DEFAULT_PAGE_SECTIONS: Record<string, PageSectionData> = {
     ctaSecondaryLabel: null,
     ctaSecondaryHref: null,
     items: ['Comunidades fortalecidas', 'Proyectos ejecutados', 'Participación activa'],
+    mediaItems: [],
+    documents: [],
     isVisible: true,
   },
 };
@@ -214,6 +246,8 @@ export const DEFAULT_PROJECTS: ProjectItemData[] = [
     imageUrl: '/images/proyecto-01-escuchar-voz-jovenes.jpg',
     imageAlt:
       'Encuentro de diálogo comunitario escuchando la voz de jóvenes en territorio rural',
+    mediaItems: [],
+    documents: [],
     sortOrder: 1,
     isPublished: true,
   },
@@ -228,6 +262,8 @@ export const DEFAULT_PROJECTS: ProjectItemData[] = [
     imageUrl: '/images/proyecto-02-cultura-de-paz-amistad.jpg',
     imageAlt:
       'Niñas participando en jornada de cultura de paz sosteniendo un cartel con la palabra Amistad',
+    mediaItems: [],
+    documents: [],
     sortOrder: 2,
     isPublished: true,
   },
@@ -242,6 +278,8 @@ export const DEFAULT_PROJECTS: ProjectItemData[] = [
     imageUrl: '/images/proyecto-03-dialogos-intergeneracionales.jpg',
     imageAlt:
       'Mesa de diálogo intergeneracional comunitario acompañada de ejercicios de memoria histórica',
+    mediaItems: [],
+    documents: [],
     sortOrder: 3,
     isPublished: true,
   },

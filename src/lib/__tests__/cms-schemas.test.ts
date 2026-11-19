@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createActionAreaSchema,
   createAdminUserSchema,
   createProjectSchema,
+  registerMediaAssetSchema,
+  updateActionAreaSchema,
   updateAdminUserSchema,
+  updateMediaAssetSchema,
   updateMessageStatusSchema,
   updateProjectSchema,
   updateSectionSchema,
@@ -21,9 +25,39 @@ describe('CMS & Admin Zod Schemas', () => {
       ctaSecondaryLabel: 'Misión',
       ctaSecondaryHref: '#nuestra-mision',
       items: ['Comunidades fortalecidas'],
+      mediaItems: [
+        {
+          id: 'vid-1',
+          type: 'video',
+          url: 'https://youtu.be/dQw4w9WgXcQ',
+          title: 'Video de territorio',
+        },
+      ],
+      documents: [
+        {
+          id: 'pdf-1',
+          title: 'Cartilla metodológica',
+          url: 'https://example.public.blob.vercel-storage.com/cartilla.pdf',
+          fileName: 'cartilla.pdf',
+          sizeBytes: 102400,
+        },
+      ],
       isVisible: true,
     });
     expect(valid.success).toBe(true);
+
+    const invalidVideoItem = updateSectionSchema.safeParse({
+      key: 'hero',
+      title: 'Título válido',
+      mediaItems: [
+        {
+          id: 'vid-bad',
+          type: 'video',
+          url: 'http://insecure.example.com/video.mp4',
+        },
+      ],
+    });
+    expect(invalidVideoItem.success).toBe(false);
 
     const xssHref = updateSectionSchema.safeParse({
       key: 'hero',
@@ -107,6 +141,38 @@ describe('CMS & Admin Zod Schemas', () => {
     });
     expect(invalidSettings.success).toBe(false);
 
+    const insecureInstagram = updateSiteSettingsSchema.safeParse({
+      organizationName: 'Corporación Tejer Paz',
+      seoTitle: 'Corporación Tejer Paz | Paz y Reconciliación',
+      seoDescription:
+        'Organización nacida del impulso juvenil del suroccidente colombiano para la construcción de paz.',
+      contactEmail: 'coorp.tejerpaz@gmail.com',
+      phones: ['301 3617133'],
+      instagramHandle: '@corp.tejepaz',
+      instagramUrl: 'http://www.instagram.com/corp.tejepaz/',
+      quoteText: 'La paz es el tejido que nos une y la reconciliación nos sostiene.',
+      footerCopyright: '© 2026 Corporación Tejer Paz.',
+      logoUrl: '/images/logo-corporacion-tejer-paz.png',
+      logoAlt: 'Logotipo de la Corporación Tejer Paz',
+    });
+    expect(insecureInstagram.success).toBe(false);
+
+    const xssInstagram = updateSiteSettingsSchema.safeParse({
+      organizationName: 'Corporación Tejer Paz',
+      seoTitle: 'Corporación Tejer Paz | Paz y Reconciliación',
+      seoDescription:
+        'Organización nacida del impulso juvenil del suroccidente colombiano para la construcción de paz.',
+      contactEmail: 'coorp.tejerpaz@gmail.com',
+      phones: ['301 3617133'],
+      instagramHandle: '@corp.tejepaz',
+      instagramUrl: 'javascript:alert(1)',
+      quoteText: 'La paz es el tejido que nos une y la reconciliación nos sostiene.',
+      footerCopyright: '© 2026 Corporación Tejer Paz.',
+      logoUrl: '/images/logo-corporacion-tejer-paz.png',
+      logoAlt: 'Logotipo de la Corporación Tejer Paz',
+    });
+    expect(xssInstagram.success).toBe(false);
+
     expect(
       updateMessageStatusSchema.safeParse({ id: 10, status: 'replied' }).success
     ).toBe(true);
@@ -137,8 +203,71 @@ describe('CMS & Admin Zod Schemas', () => {
     expect(
       updateAdminUserSchema.safeParse({
         userId: 'usr-123',
+        name: 'Liderazgo Territorial',
         role: 'superadmin',
         banned: false,
+        newPassword: 'NuevaClaveSegura2026!',
+      }).success
+    ).toBe(true);
+
+    expect(
+      updateAdminUserSchema.safeParse({
+        userId: 'usr-123',
+        newPassword: 'corta',
+      }).success
+    ).toBe(false);
+  });
+
+  it('validates action areas and media asset schemas', () => {
+    expect(
+      createActionAreaSchema.safeParse({
+        slug: 'juventudes-territoriales',
+        title: 'Juventudes territoriales',
+        description:
+          'Estrategia juvenil de prevención y construcción de paz en el territorio.',
+        imageUrl: '/images/area.jpg',
+        imageAlt: 'Jóvenes trabajando en taller territorial',
+        href: '/proyectos',
+        sortOrder: 1,
+        isActive: true,
+      }).success
+    ).toBe(true);
+
+    expect(
+      updateActionAreaSchema.safeParse({
+        id: 2,
+        isActive: false,
+      }).success
+    ).toBe(true);
+
+    expect(
+      registerMediaAssetSchema.safeParse({
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        pathname: 'video/youtube/dQw4w9WgXcQ',
+        filename: 'Encuentro territorial',
+        title: 'Encuentro territorial',
+        mimeType: 'video/external',
+        assetType: 'video',
+        storageProvider: 'external',
+      }).success
+    ).toBe(true);
+
+    expect(
+      registerMediaAssetSchema.safeParse({
+        url: 'javascript:alert(1)',
+        pathname: 'video/bad',
+        filename: 'bad',
+        mimeType: 'video/external',
+        assetType: 'video',
+        storageProvider: 'external',
+      }).success
+    ).toBe(false);
+
+    expect(
+      updateMediaAssetSchema.safeParse({
+        id: 4,
+        title: 'Foto actualizada',
+        alt: 'Descripción accesible actualizada',
       }).success
     ).toBe(true);
   });

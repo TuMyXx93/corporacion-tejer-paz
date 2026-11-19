@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Public_Sans, Syne } from 'next/font/google';
 import { DEFAULT_SITE_SETTINGS } from '@/data/default-content';
+import { resolvePublicSiteUrl } from '@/lib/auth/origins';
 import './globals.css';
 
 const syne = Syne({
@@ -18,10 +19,10 @@ const publicSans = Public_Sans({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const siteUrl = resolvePublicSiteUrl();
 
 export const viewport: Viewport = {
-  themeColor: '#4D3F32',
+  themeColor: '#3B2816',
   width: 'device-width',
   initialScale: 1,
 };
@@ -70,8 +71,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${syne.variable} ${publicSans.variable}`}>
-      <body className="min-h-screen bg-cream font-sans text-espresso antialiased">
+    <html
+      lang="es"
+      data-scroll-behavior="smooth"
+      className={`${syne.variable} ${publicSans.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        className="min-h-screen bg-cream font-sans text-espresso antialiased"
+        suppressHydrationWarning
+      >
         <a
           href="#contenido-principal"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-espresso focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-cream"

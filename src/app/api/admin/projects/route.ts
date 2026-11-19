@@ -33,6 +33,19 @@ export async function POST(request: Request) {
   }
 
   const db = requireDb();
+  const existing = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(eq(projects.slug, parsed.data.slug))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return NextResponse.json(
+      { error: 'Ya existe un proyecto registrado con ese slug.' },
+      { status: 409 }
+    );
+  }
+
   const [created] = await db.insert(projects).values(parsed.data).returning();
 
   await recordAuditLog({
@@ -44,6 +57,7 @@ export async function POST(request: Request) {
   });
 
   revalidateTag(SITE_CONTENT_CACHE_TAG, 'max');
+  revalidatePath('/');
   revalidatePath('/proyectos');
 
   return NextResponse.json({ ok: true, project: created }, { status: 201 });
@@ -64,6 +78,21 @@ export async function PATCH(request: Request) {
 
   const { id, ...fields } = parsed.data;
   const db = requireDb();
+
+  if (fields.slug) {
+    const conflict = await db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(eq(projects.slug, fields.slug))
+      .limit(1);
+    if (conflict.length > 0 && conflict[0].id !== id) {
+      return NextResponse.json(
+        { error: 'Otro proyecto ya utiliza ese slug.' },
+        { status: 409 }
+      );
+    }
+  }
+
   const [updated] = await db
     .update(projects)
     .set({ ...fields, updatedAt: new Date() })
@@ -83,6 +112,7 @@ export async function PATCH(request: Request) {
   });
 
   revalidateTag(SITE_CONTENT_CACHE_TAG, 'max');
+  revalidatePath('/');
   revalidatePath('/proyectos');
 
   return NextResponse.json({ ok: true, project: updated });
@@ -113,6 +143,7 @@ export async function DELETE(request: Request) {
   });
 
   revalidateTag(SITE_CONTENT_CACHE_TAG, 'max');
+  revalidatePath('/');
   revalidatePath('/proyectos');
 
   return NextResponse.json({ ok: true });

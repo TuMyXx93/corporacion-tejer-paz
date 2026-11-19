@@ -123,7 +123,7 @@ export function ContactForm() {
             value={firstName}
             onChange={e => setFirstName(e.target.value)}
             aria-invalid={Boolean(errors.firstName)}
-            className="w-full rounded-lg border border-espresso/40 bg-white/70 px-3.5 py-2.5 text-base text-espresso placeholder:text-earth focus:border-umber"
+            className="w-full rounded-lg border border-taupe bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-earth focus:border-umber"
           />
           {errors.firstName && (
             <p className="mt-1 text-xs font-medium text-red-700">{errors.firstName}</p>
@@ -146,7 +146,7 @@ export function ContactForm() {
             value={lastName}
             onChange={e => setLastName(e.target.value)}
             aria-invalid={Boolean(errors.lastName)}
-            className="w-full rounded-lg border border-espresso/40 bg-white/70 px-3.5 py-2.5 text-base text-espresso placeholder:text-earth focus:border-umber"
+            className="w-full rounded-lg border border-taupe bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-earth focus:border-umber"
           />
           {errors.lastName && (
             <p className="mt-1 text-xs font-medium text-red-700">{errors.lastName}</p>
@@ -170,7 +170,7 @@ export function ContactForm() {
           value={email}
           onChange={e => setEmail(e.target.value)}
           aria-invalid={Boolean(errors.email)}
-          className="w-full rounded-lg border border-espresso/40 bg-white/70 px-3.5 py-2.5 text-base text-espresso placeholder:text-earth focus:border-umber"
+          className="w-full rounded-lg border border-taupe bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-earth focus:border-umber"
         />
         {errors.email && (
           <p className="mt-1 text-xs font-medium text-red-700">{errors.email}</p>
@@ -192,7 +192,7 @@ export function ContactForm() {
           value={subject}
           onChange={e => setSubject(e.target.value)}
           aria-invalid={Boolean(errors.subject)}
-          className="w-full rounded-lg border border-espresso/40 bg-white/70 px-3.5 py-2.5 text-base text-espresso placeholder:text-earth focus:border-umber"
+          className="w-full rounded-lg border border-taupe bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-earth focus:border-umber"
         />
         {errors.subject && (
           <p className="mt-1 text-xs font-medium text-red-700">{errors.subject}</p>
@@ -214,7 +214,7 @@ export function ContactForm() {
           value={message}
           onChange={e => setMessage(e.target.value)}
           aria-invalid={Boolean(errors.message)}
-          className="w-full rounded-lg border border-espresso/40 bg-white/70 px-3.5 py-2.5 text-base text-espresso placeholder:text-earth focus:border-umber"
+          className="w-full rounded-lg border border-taupe bg-surface px-3.5 py-2.5 text-base text-ink placeholder:text-earth focus:border-umber"
         />
         {errors.message && (
           <p className="mt-1 text-xs font-medium text-red-700">{errors.message}</p>

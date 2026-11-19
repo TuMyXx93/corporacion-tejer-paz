@@ -6,14 +6,15 @@ const cspHeader = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' blob: data: https://*.public.blob.vercel-storage.com https://*.r2.dev",
-  "connect-src 'self' https://*.public.blob.vercel-storage.com https://blob.vercel-storage.com https://*.r2.dev https://*.r2.cloudflarestorage.com",
+  "img-src 'self' blob: data: https://*.public.blob.vercel-storage.com https://*.r2.dev https://i.ytimg.com https://i.vimeocdn.com",
+  "connect-src 'self' https://vercel.com/api/blob https://vercel.com/api/blob/ https://*.blob.vercel-storage.com https://*.public.blob.vercel-storage.com https://blob.vercel-storage.com https://*.r2.dev https://*.r2.cloudflarestorage.com",
+  "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com",
   "font-src 'self' data:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  'upgrade-insecure-requests',
+  ...(isDev ? [] : ['upgrade-insecure-requests']),
 ].join('; ');
 
 const nextConfig: NextConfig = {
@@ -32,6 +33,16 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.r2.dev',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.vimeocdn.com',
         pathname: '/**',
       },
     ],
