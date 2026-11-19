@@ -32,7 +32,7 @@ export default async function AdminLoginPage() {
             alt={DEFAULT_SITE_SETTINGS.logoAlt}
             width={160}
             height={68}
-            priority
+            loading="eager"
             className="h-14 w-auto object-contain"
           />
         </div>

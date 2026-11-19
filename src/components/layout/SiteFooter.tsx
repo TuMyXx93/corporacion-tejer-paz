@@ -35,7 +35,7 @@ function formatTelHref(phone: string): string {
 
 export function SiteFooter({ settings }: SiteFooterProps) {
   return (
-    <footer className="border-t border-taupe bg-sand">
+    <footer data-nav-theme="light" className="border-t border-taupe bg-sand">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="space-y-3 md:col-span-5">
@@ -58,11 +58,6 @@ export function SiteFooter({ settings }: SiteFooterProps) {
               Navegación
             </p>
             <ul className="space-y-2 text-sm font-medium text-espresso">
-              <li>
-                <Link href="/" className="hover:text-umber hover:underline">
-                  Inicio
-                </Link>
-              </li>
               <li>
                 <Link
                   href="/#nuestra-mision"
@@ -89,7 +84,7 @@ export function SiteFooter({ settings }: SiteFooterProps) {
             </ul>
           </div>
 
-          <div className="space-y-3 md:col-span-4">
+          <div className="space-y-4 md:col-span-4">
             <p className="text-xs font-bold tracking-wider text-umber uppercase">
               Canales Directos
             </p>
@@ -114,17 +109,22 @@ export function SiteFooter({ settings }: SiteFooterProps) {
                   </a>
                 ))}
               </div>
+            </div>
 
-              <div className="pt-1">
+            <div className="space-y-2 pt-1">
+              <p className="text-[11px] font-bold tracking-wider text-earth uppercase">
+                Síguenos
+              </p>
+              <div className="flex flex-wrap items-center gap-2.5">
                 <a
                   href={settings.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Instagram ${settings.instagramHandle}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-umber/40 bg-surface px-3.5 py-1.5 text-sm font-medium text-espresso transition-colors hover:bg-butter"
+                  title={`Instagram (${settings.instagramHandle})`}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-taupe bg-surface text-espresso shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gold hover:bg-butter hover:text-umber"
                 >
-                  <InstagramIcon className="h-4 w-4 text-umber" />
-                  <span>{settings.instagramHandle}</span>
+                  <InstagramIcon className="h-5 w-5" />
                 </a>
               </div>
             </div>

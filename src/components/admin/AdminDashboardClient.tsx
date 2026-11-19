@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -167,12 +167,23 @@ export function AdminDashboardClient({
     setMobileMenuOpen(false);
   }
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   return (
     <div className="min-h-screen bg-sand/50 text-ink">
       {/* Cabecera compacta institucional */}
       <header className="sticky top-0 z-30 border-b border-taupe bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2.5 px-3 py-2.5 sm:px-6 sm:py-3">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(v => !v)}
@@ -182,7 +193,7 @@ export function AdminDashboardClient({
                   ? 'Cerrar menú administrativo'
                   : 'Abrir menú administrativo'
               }
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-taupe bg-cream text-espresso hover:bg-sand lg:hidden"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-taupe bg-cream text-espresso hover:bg-sand sm:h-10 sm:w-10 lg:hidden"
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" aria-hidden="true" />
@@ -196,30 +207,26 @@ export function AdminDashboardClient({
               alt={settings.logoAlt}
               width={110}
               height={46}
+              loading="eager"
               unoptimized={!isNextOptimizableImage(settings.logoUrl)}
-              className="hidden h-9 w-auto shrink-0 object-contain sm:block"
+              className="h-7 w-auto shrink-0 object-contain sm:h-9"
             />
 
-            <div className="min-w-0">
-              <p className="truncate text-[11px] font-bold tracking-wider text-umber uppercase">
-                Panel Administrativo · Tejer Paz
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate font-display text-base font-bold text-espresso sm:text-lg">
-                  Hola, {actor.name}
-                </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink uppercase">
-                  <Shield className="h-3 w-3" aria-hidden="true" />
-                  {isSuperadmin ? 'Superadmin' : 'Admin'}
-                </span>
-              </div>
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+              <h1 className="truncate font-display text-sm font-bold text-espresso sm:text-lg">
+                Hola, {actor.name}
+              </h1>
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-ink uppercase">
+                <Shield className="h-3 w-3" aria-hidden="true" />
+                {isSuperadmin ? 'Superadmin' : 'Admin'}
+              </span>
             </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-taupe bg-cream px-3 py-2 text-xs font-semibold text-espresso hover:bg-sand"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-taupe bg-cream px-2.5 py-1.5 text-xs font-semibold text-espresso hover:bg-sand sm:px-3 sm:py-2"
             >
               <ExternalLink className="h-3.5 w-3.5 text-umber" aria-hidden="true" />
               <span className="hidden sm:inline">Ver sitio público</span>
@@ -228,62 +235,114 @@ export function AdminDashboardClient({
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-espresso px-3 py-2 text-xs font-semibold text-cream hover:bg-umber"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-espresso px-2.5 py-1.5 text-xs font-semibold text-cream hover:bg-umber sm:px-3 sm:py-2"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Salir</span>
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Menú desplegable en móvil */}
-        {mobileMenuOpen && (
-          <nav
-            aria-label="Menú administrativo móvil"
-            className="border-t border-taupe bg-surface px-4 py-3 lg:hidden"
+      {/* Drawer lateral único para móvil y tablet (< lg) */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div aria-hidden="true" className="fixed inset-0 bg-ink/50 backdrop-blur-xs" />
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú administrativo"
+            onClick={e => e.stopPropagation()}
+            className="relative flex h-full w-72 max-w-[85vw] flex-col border-r border-taupe bg-surface shadow-2xl"
           >
-            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+            <div className="flex items-center justify-between gap-3 border-b border-taupe px-4 py-3.5">
+              <Image
+                src={settings.logoUrl}
+                alt={settings.logoAlt}
+                width={108}
+                height={45}
+                unoptimized={!isNextOptimizableImage(settings.logoUrl)}
+                className="h-8 w-auto object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Cerrar menú administrativo"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-taupe bg-cream text-espresso hover:bg-sand"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+
+            <nav
+              aria-label="Módulos administrativos móviles"
+              className="flex-1 space-y-1 overflow-y-auto p-3"
+            >
+              <p className="px-3 pt-1 pb-2 text-[11px] font-bold tracking-wider text-earth uppercase">
+                Módulos de Gestión
+              </p>
               {visibleNavItems.map(item => {
                 const Icon = item.icon;
                 const active = activeTab === item.key;
                 return (
-                  <li key={item.key}>
-                    <button
-                      type="button"
-                      onClick={() => selectTab(item.key)}
-                      className={`flex w-full items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${
-                        active
-                          ? 'bg-umber text-cream'
-                          : 'bg-cream text-espresso hover:bg-sand'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <span>{item.label}</span>
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => selectTab(item.key)}
+                    className={`flex w-full items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${
+                      active
+                        ? 'bg-umber text-cream shadow-2xs'
+                        : 'text-espresso hover:bg-sand'
+                    }`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{item.label}</span>
+                    </span>
+                    {item.badge !== undefined && (
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                          active
+                            ? 'bg-cream/20 text-cream'
+                            : item.badgeUrgent
+                              ? 'bg-red-100 text-red-900'
+                              : 'bg-cream text-earth'
+                        }`}
+                      >
+                        {item.badge}
                       </span>
-                      {item.badge !== undefined && (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                            active
-                              ? 'bg-surface/20 text-cream'
-                              : item.badgeUrgent
-                                ? 'bg-red-100 text-red-900'
-                                : 'bg-sand text-espresso'
-                          }`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  </li>
+                    )}
+                  </button>
                 );
               })}
-            </ul>
-          </nav>
-        )}
-      </header>
+            </nav>
 
-      {/* Contenedor principal con barra lateral desktop y píldoras móviles */}
+            <div className="space-y-2 border-t border-taupe p-3">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-taupe bg-cream px-3.5 py-2 text-xs font-semibold text-espresso hover:bg-sand"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-umber" aria-hidden="true" />
+                Ver sitio público
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-espresso px-3.5 py-2 text-xs font-semibold text-cream hover:bg-umber"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                Cerrar sesión
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Contenedor principal con barra lateral desktop */}
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:py-8">
         {/* Sidebar Desktop */}
         <aside className="hidden w-64 shrink-0 lg:block">
@@ -330,45 +389,6 @@ export function AdminDashboardClient({
             })}
           </nav>
         </aside>
-
-        {/* Píldoras horizontales en móvil/tablet */}
-        <nav
-          aria-label="Navegación rápida administrativa"
-          className="flex gap-2 overflow-x-auto pb-1 lg:hidden"
-        >
-          {visibleNavItems.map(item => {
-            const Icon = item.icon;
-            const active = activeTab === item.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => selectTab(item.key)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors ${
-                  active
-                    ? 'bg-umber text-cream'
-                    : 'border border-taupe bg-surface text-espresso hover:bg-sand'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span>{item.label}</span>
-                {item.badge !== undefined && (
-                  <span
-                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                      active
-                        ? 'bg-cream/20 text-cream'
-                        : item.badgeUrgent
-                          ? 'bg-red-100 text-red-900'
-                          : 'bg-sand text-espresso'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
 
         {/* Contenido principal */}
         <main id="contenido-principal" className="min-w-0 flex-1 space-y-5">

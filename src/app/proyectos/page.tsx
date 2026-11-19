@@ -26,18 +26,19 @@ export default async function ProyectosPage() {
         organizationName={settings.organizationName}
         logoUrl={settings.logoUrl}
         logoAlt={settings.logoAlt}
+        initialTone="light"
       />
 
       <main id="contenido-principal" className="flex-1">
         {/* Iniciativas Actuales */}
         {intro?.isVisible && (
-          <section className="px-4 py-16 sm:px-6 md:py-24 lg:px-8">
+          <section
+            data-nav-theme="light"
+            className="px-4 pt-28 pb-16 sm:px-6 md:pt-32 md:pb-24 lg:px-8"
+          >
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-12 lg:items-start">
               <div className="lg:sticky lg:top-28 lg:col-span-4">
-                <span className="inline-block rounded-full border border-gold/50 bg-butter px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
-                  Procesos Vivos
-                </span>
-                <h1 className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
+                <h1 className="font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
                   {intro.title}
                 </h1>
                 <p className="mt-5 text-base leading-relaxed text-earth sm:text-lg">
@@ -102,6 +103,7 @@ export default async function ProyectosPage() {
                             src={project.imageUrl}
                             alt={project.imageAlt}
                             fill
+                            loading={index === 0 ? 'eager' : undefined}
                             unoptimized={!isNextOptimizableImage(project.imageUrl)}
                             sizes={
                               index === 0
@@ -148,7 +150,10 @@ export default async function ProyectosPage() {
 
         {/* Impacto en Nuestras Comunidades (alto contraste sobre tierra tejida #3B2816) */}
         {impact?.isVisible && (
-          <section className="grid grid-cols-1 border-t border-taupe lg:grid-cols-2">
+          <section
+            data-nav-theme="light"
+            className="grid grid-cols-1 border-t border-taupe lg:grid-cols-2"
+          >
             <div className="flex flex-col justify-center bg-espresso px-6 py-16 text-cream sm:px-12 lg:px-16 lg:py-24">
               <div className="mx-auto w-full max-w-lg lg:mx-0">
                 <div aria-hidden="true" className="mb-5 h-1 w-16 rounded-full bg-gold" />

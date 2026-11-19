@@ -28,24 +28,25 @@ export default async function HomePage() {
         organizationName={settings.organizationName}
         logoUrl={settings.logoUrl}
         logoAlt={settings.logoAlt}
+        initialTone="dark"
       />
 
       <main id="contenido-principal" className="flex-1">
         {/* Hero */}
         {hero?.isVisible && (
-          <section className="bg-espresso text-cream">
+          <section data-nav-theme="dark" className="bg-espresso text-cream">
             {hero.imageUrl && (
-              <div className="relative h-56 w-full overflow-hidden bg-espresso sm:h-72 md:h-96 lg:h-[460px]">
+              <div className="relative h-72 w-full overflow-hidden bg-espresso sm:h-96 md:h-[440px] lg:h-[520px]">
                 <Image
                   src={hero.imageUrl}
                   alt={hero.imageAlt || settings.organizationName}
                   fill
-                  priority
+                  loading="eager"
                   unoptimized={!isNextOptimizableImage(hero.imageUrl)}
                   sizes="100vw"
                   className="object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-transparent to-espresso/90" />
+                <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/10 to-espresso/90" />
               </div>
             )}
 
@@ -101,14 +102,12 @@ export default async function HomePage() {
         {mission?.isVisible && (
           <section
             id="nuestra-mision"
+            data-nav-theme="light"
             className="scroll-mt-24 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
           >
             <div className="mx-auto max-w-5xl">
               <div className="text-center">
-                <span className="inline-block rounded-full border border-gold/50 bg-butter px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
-                  Propósito Territorial
-                </span>
-                <h2 className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
+                <h2 className="font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
                   {mission.title}
                 </h2>
               </div>
@@ -136,17 +135,15 @@ export default async function HomePage() {
         {/* Nuestras Áreas de Acción (#areas) */}
         <section
           id="areas"
+          data-nav-theme="light"
           aria-labelledby="areas-de-accion-heading"
           className="scroll-mt-24 border-y border-taupe/70 bg-sand/55 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
         >
           <div className="mx-auto max-w-6xl">
             <div className="mx-auto max-w-2xl text-center">
-              <span className="inline-block rounded-full border border-taupe bg-surface px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
-                Tejido en el Territorio
-              </span>
               <h2
                 id="areas-de-accion-heading"
-                className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl"
+                className="font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl"
               >
                 Nuestras Áreas de Acción
               </h2>
@@ -189,7 +186,10 @@ export default async function HomePage() {
 
         {/* Impacto Comunitario */}
         {communityImpact?.isVisible && (
-          <section className="relative isolate overflow-hidden bg-espresso py-20 text-cream sm:py-28">
+          <section
+            data-nav-theme="dark"
+            className="relative isolate overflow-hidden bg-espresso py-20 text-cream sm:py-28"
+          >
             {communityImpact.imageUrl && (
               <Image
                 src={communityImpact.imageUrl}
@@ -233,14 +233,12 @@ export default async function HomePage() {
         {contactIntro?.isVisible && (
           <section
             id="contacto"
+            data-nav-theme="light"
             className="scroll-mt-24 px-4 py-16 sm:px-6 md:py-24 lg:px-8"
           >
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <span className="inline-block rounded-full border border-gold/50 bg-butter px-3.5 py-1 text-xs font-bold tracking-wider text-umber uppercase">
-                  Alianzas y Escucha
-                </span>
-                <h2 className="mt-3 font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
+                <h2 className="font-display text-3xl leading-tight font-bold text-espresso sm:text-5xl">
                   {contactIntro.title}
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-earth sm:text-lg">
@@ -297,7 +295,10 @@ export default async function HomePage() {
         )}
 
         {/* Franja de cita institucional */}
-        <section className="border-y border-taupe bg-butter px-4 py-12 sm:px-6 lg:px-8">
+        <section
+          data-nav-theme="light"
+          className="border-y border-taupe bg-butter px-4 py-12 sm:px-6 lg:px-8"
+        >
           <div className="mx-auto max-w-4xl text-center">
             <div
               aria-hidden="true"

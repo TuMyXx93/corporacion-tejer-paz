@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Corporación Tejer Paz — Smoke, Responsiveness & Accessibility', () => {
-  test('Inicio renders with valid H1, working mission anchor, clickable contact, and zero serious a11y issues', async ({
+  test('Inicio renders adaptive glass navbar, clean editorial sections, footer without Inicio, and zero serious a11y issues', async ({
     page,
   }) => {
     await page.goto('/');
@@ -16,23 +16,64 @@ test.describe('Corporación Tejer Paz — Smoke, Responsiveness & Accessibility'
     );
     expect(overflow).toBe(false);
 
+    // Header navigation excludes "Inicio" and includes the 4 unified links (desktop or via mobile menu)
+    const header = page.locator('header');
+    const mobileMenuButton = header.getByRole('button', { name: /abrir menú/i });
+    const isMobileHeader = await mobileMenuButton.isVisible();
+    if (isMobileHeader) {
+      await mobileMenuButton.click();
+    }
+    await expect(header.getByRole('link', { name: 'Inicio', exact: true })).toHaveCount(
+      0
+    );
+    await expect(header.getByRole('link', { name: 'Misión' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Áreas' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Proyectos' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Contáctanos' })).toBeVisible();
+    if (isMobileHeader) {
+      await header.getByRole('button', { name: /cerrar menú/i }).click();
+    }
+
+    // Removed redundant eyebrow pills
+    await expect(page.getByText('Propósito Territorial')).toHaveCount(0);
+    await expect(page.getByText('Tejido en el Territorio')).toHaveCount(0);
+    await expect(page.getByText('Alianzas y Escucha')).toHaveCount(0);
+
     await expect(page.locator('#nuestra-mision')).toBeVisible();
     await expect(page.locator('a[href^="mailto:"]').first()).toBeVisible();
     await expect(page.locator('a[href^="tel:"]').first()).toBeVisible();
 
-    const axe = await new AxeBuilder({ page }).analyze();
-    const blocking = axe.violations.filter(
+    // Footer excludes "Inicio" and renders scalable icon link for Instagram
+    const footer = page.locator('footer');
+    await expect(footer.getByRole('link', { name: 'Inicio', exact: true })).toHaveCount(
+      0
+    );
+    await expect(footer.locator('a[aria-label^="Instagram"]')).toBeVisible();
+
+    // Axe check in initial top position (dark hero glass navbar)
+    const axeTop = await new AxeBuilder({ page }).analyze();
+    const blockingTop = axeTop.violations.filter(
       v => v.impact === 'critical' || v.impact === 'serious'
     );
-    expect(blocking).toEqual([]);
+    expect(blockingTop).toEqual([]);
+
+    // Scroll to light section so adaptive header switches to light glass and verify a11y again
+    await page.locator('#nuestra-mision').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+    const axeScrolled = await new AxeBuilder({ page }).analyze();
+    const blockingScrolled = axeScrolled.violations.filter(
+      v => v.impact === 'critical' || v.impact === 'serious'
+    );
+    expect(blockingScrolled).toEqual([]);
   });
 
-  test('Proyectos renders with real H1, visible project descriptions, and zero serious a11y issues', async ({
+  test('Proyectos renders cleanly without redundant eyebrow and with zero serious a11y issues', async ({
     page,
   }) => {
     await page.goto('/proyectos');
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h1')).toContainText(/Iniciativas actuales/i);
+    await expect(page.getByText('Procesos Vivos')).toHaveCount(0);
     await expect(
       page.getByText('Fomentar espacios protectores a partir del diálogo')
     ).toBeVisible();

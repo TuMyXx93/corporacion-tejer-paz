@@ -86,7 +86,7 @@ export function SectionsTab({
 
   return (
     <section className="min-w-0 space-y-6 rounded-2xl border border-taupe bg-surface p-4 shadow-xs sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-taupe pb-4">
         <div className="min-w-0">
           <h2 className="font-display text-xl font-bold text-espresso">
             Editor de Secciones
@@ -96,7 +96,8 @@ export function SectionsTab({
           </p>
         </div>
 
-        <div className="w-full min-w-0 sm:w-72">
+        {/* Móvil: desplegable limpio; Tablet/Escritorio: píldoras de sección */}
+        <div className="w-full min-w-0 md:hidden">
           <label htmlFor="section-selector" className="sr-only">
             Seleccionar sección
           </label>
@@ -117,30 +118,29 @@ export function SectionsTab({
             ))}
           </select>
         </div>
-      </div>
 
-      {/* Selector rápido en píldoras */}
-      <div className="flex flex-wrap gap-1.5 border-b border-taupe pb-4">
-        {sections.map(s => {
-          const selected = s.key === activeSection.key;
-          return (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => {
-                feedback.clearFeedback();
-                setSelectedKey(s.key);
-              }}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                selected
-                  ? 'bg-umber text-cream'
-                  : 'border border-taupe bg-cream text-espresso hover:bg-sand'
-              }`}
-            >
-              {SECTION_LABELS[s.key] || s.key}
-            </button>
-          );
-        })}
+        <div className="hidden flex-wrap gap-1.5 md:flex">
+          {sections.map(s => {
+            const selected = s.key === activeSection.key;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => {
+                  feedback.clearFeedback();
+                  setSelectedKey(s.key);
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                  selected
+                    ? 'bg-umber text-cream'
+                    : 'border border-taupe bg-cream text-espresso hover:bg-sand'
+                }`}
+              >
+                {SECTION_LABELS[s.key] || s.key}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <form onSubmit={handleSaveSection} className="space-y-5">
@@ -344,6 +344,7 @@ export function SectionsTab({
                   src={activeSection.imageUrl}
                   alt={activeSection.imageAlt || activeSection.title}
                   fill
+                  loading="eager"
                   unoptimized={!isNextOptimizableImage(activeSection.imageUrl)}
                   sizes="176px"
                   className="object-cover"
