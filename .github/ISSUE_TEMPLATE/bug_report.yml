@@ -1,0 +1,32 @@
+name: Reporte de Error (Bug)
+description: Reporta un fallo funcional, visual, de accesibilidad o seguridad en la plataforma.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del error
+      description: ¿Qué ocurrió y qué esperabas que ocurriera?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Ir a '...'
+        2. Hacer clic en '...'
+        3. Observar el error
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Entorno
+      options:
+        - Producción (main)
+        - Preview (dev / PR)
+        - Local (Windows / WSL)
+    validations:
+      required: true

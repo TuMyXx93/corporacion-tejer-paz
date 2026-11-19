@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Gentleman-Programming/engram/main/.engramrc.schema.json",
+  "project": "corporation",
+  "projectDisplayName": "Corporación Tejer Paz Web & Admin",
+  "version": "1.0.0",
+  "description": "Plataforma institucional y panel administrativo RBAC para Corporación Tejer Paz (Next.js 16 + Better Auth + Drizzle + Neon + Vercel Blob)",
+  "rules": {
+    "requireSessionSummary": false,
+    "autoPassiveCapture": false,
+    "autoSyncOnCommit": false
+  },
+  "paths": {
+    "docs": ".agents/",
+    "memory": ".engram/"
+  },
+  "ignoredPaths": [
+    "node_modules",
+    ".next",
+    "dist",
+    "coverage",
+    ".vercel",
+    ".migration-audit/scraper/node_modules"
+  ],
+  "hooks": {
+    "preCommit": { "enabled": false },
+    "prePush": { "enabled": false }
+  },
+  "cloud": {
+    "syncEnabled": false,
+    "excludeTypes": ["tool_use", "file_read", "search"]
+  },
+  "metadata": {
+    "technologies": [
+      "nextjs-16",
+      "react-19",
+      "typescript",
+      "tailwindcss-4",
+      "better-auth",
+      "drizzle-orm",
+      "neon-postgres",
+      "vercel-blob",
+      "resend",
+      "vitest",
+      "playwright"
+    ],
+    "packageManager": "pnpm@12.21.0",
+    "nodeVersion": "26.13.1",
+    "integrationDate": "2026-11-18"
+  }
+}

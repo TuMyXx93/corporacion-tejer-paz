@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme inline {
+  /* Paleta territorial oficial — extraída de Corporación Tejer Paz */
+  --color-cream: #fdf9f2;
+  --color-sand: #ebe6df;
+  --color-taupe: #c8c1b8;
+  --color-earth: #8b8075;
+  --color-espresso: #4d3f32;
+  --color-umber: #6a543d;
+  --color-ink: #2e241c;
+  --color-gold: #ffd32e;
+  --color-ochre: #b58c61;
+  --color-butter: #fff0b1;
+
+  /* Tipografía autoalojada vía next/font/google */
+  --font-display: var(--font-syne), 'Syne', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-cream);
+  color: var(--color-espresso);
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-espresso);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-umber);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

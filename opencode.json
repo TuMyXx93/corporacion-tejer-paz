@@ -1,0 +1,61 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "share": "manual",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  },
+  "formatter": {
+    "prettier": {
+      "command": ["pnpm", "exec", "prettier", "--write", "$FILE"],
+      "extensions": [
+        ".ts",
+        ".tsx",
+        ".js",
+        ".mjs",
+        ".json",
+        ".md",
+        ".css",
+        ".yml",
+        ".yaml"
+      ]
+    }
+  },
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "engram": {
+      "type": "local",
+      "command": ["engram", "mcp", "--project=corporation", "--tools=agent"],
+      "enabled": true
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "skill": {
+      "*": "allow"
+    }
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".next/**",
+      "coverage/**",
+      ".git/**",
+      ".vercel/**",
+      ".migration-audit/scraper/node_modules/**"
+    ]
+  }
+}

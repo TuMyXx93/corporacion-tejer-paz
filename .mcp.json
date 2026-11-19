@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "engram": {
+      "command": "engram",
+      "args": ["mcp", "--project=corporation", "--tools=agent"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+name: Solicitud de Mejora (Feature)
+description: Propón una mejora editorial, funcional o técnica para Corporación Tejer Paz.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Necesidad o problema
+      description: ¿Qué necesidad de la Corporación o del equipo resuelve esta mejora?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta de solución
+      description: Describe el comportamiento esperado en sitio público o panel administrativo.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Alcance principal
+      options:
+        - Sitio público (UI/UX, SEO, Accesibilidad)
+        - Panel administrativo (/admin y RBAC)
+        - APIs, Base de datos o Storage
+        - CI/CD, Testing o Documentación
