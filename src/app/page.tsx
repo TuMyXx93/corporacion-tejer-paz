@@ -34,19 +34,28 @@ export default async function HomePage() {
       <main id="contenido-principal" className="flex-1">
         {/* Hero */}
         {hero?.isVisible && (
-          <section data-nav-theme="dark" className="bg-espresso text-cream">
+          <section
+            data-nav-theme="dark"
+            className="bg-espresso pt-16 text-cream sm:pt-20"
+          >
             {hero.imageUrl && (
-              <div className="relative h-72 w-full overflow-hidden bg-espresso sm:h-96 md:h-[440px] lg:h-[520px]">
+              <div
+                data-testid="hero-banner"
+                className="relative mx-auto aspect-[45/17] w-full max-w-[1440px] overflow-hidden bg-espresso"
+              >
                 <Image
                   src={hero.imageUrl}
                   alt={hero.imageAlt || settings.organizationName}
                   fill
                   loading="eager"
                   unoptimized={!isNextOptimizableImage(hero.imageUrl)}
-                  sizes="100vw"
-                  className="object-cover object-center"
+                  sizes="(max-width: 1440px) 100vw, 1440px"
+                  className="object-contain object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/10 to-espresso/90" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-espresso/60 to-transparent sm:h-12" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-espresso via-espresso/35 to-transparent sm:h-20" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-espresso to-transparent 2xl:block" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-espresso to-transparent 2xl:block" />
               </div>
             )}
 

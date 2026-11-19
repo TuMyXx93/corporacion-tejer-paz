@@ -16,8 +16,19 @@ test.describe('Corporación Tejer Paz — Smoke, Responsiveness & Accessibility'
     );
     expect(overflow).toBe(false);
 
-    // Header navigation excludes "Inicio" and includes the 4 unified links (desktop or via mobile menu)
+    // Hero banner starts cleanly below the fixed header without horizontal clipping
     const header = page.locator('header');
+    const bannerBox = await page.getByTestId('hero-banner').boundingBox();
+    const headerBox = await header.boundingBox();
+    const viewportWidth = page.viewportSize()?.width ?? 1440;
+    expect(bannerBox).not.toBeNull();
+    expect(headerBox).not.toBeNull();
+    if (bannerBox && headerBox) {
+      expect(bannerBox.y).toBeGreaterThanOrEqual(headerBox.height - 1);
+      expect(bannerBox.width).toBeLessThanOrEqual(viewportWidth);
+    }
+
+    // Header navigation excludes "Inicio" and includes the 4 unified links (desktop or via mobile menu)
     const mobileMenuButton = header.getByRole('button', { name: /abrir menú/i });
     const isMobileHeader = await mobileMenuButton.isVisible();
     if (isMobileHeader) {
@@ -115,6 +126,17 @@ test.describe('Corporación Tejer Paz — Smoke, Responsiveness & Accessibility'
         () => document.documentElement.scrollWidth > window.innerWidth
       );
       expect(overflow, `Overflow detected on ${route} at 360px`).toBe(false);
+
+      if (route === '/') {
+        const bannerBox = await page.getByTestId('hero-banner').boundingBox();
+        const headerBox = await page.locator('header').boundingBox();
+        expect(bannerBox).not.toBeNull();
+        expect(headerBox).not.toBeNull();
+        if (bannerBox && headerBox) {
+          expect(bannerBox.y).toBeGreaterThanOrEqual(headerBox.height - 1);
+          expect(bannerBox.width).toBeLessThanOrEqual(360);
+        }
+      }
     }
   });
 

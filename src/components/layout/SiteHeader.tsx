@@ -38,7 +38,7 @@ export function SiteHeader({
       rafId = 0;
       const sections = document.querySelectorAll<HTMLElement>('[data-nav-theme]');
       let nextTone: 'dark' | 'light' = initialTone;
-      const probeY = 40;
+      const probeY = 36;
 
       for (const el of sections) {
         const rect = el.getBoundingClientRect();
@@ -90,13 +90,13 @@ export function SiteHeader({
           : 'border-b border-taupe/70 bg-cream/78 shadow-[0_1px_12px_rgba(34,23,12,0.04)]'
       }`}
     >
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-8">
         <Link
           href="/"
           onClick={() => setOpen(false)}
           className={`flex shrink-0 items-center transition-all duration-300 focus-visible:rounded-md ${
             isDark
-              ? 'rounded-xl bg-cream/92 px-2.5 py-1 shadow-xs backdrop-blur-sm'
+              ? 'rounded-lg bg-cream/95 px-2.5 py-1 ring-1 ring-gold/30 shadow-xs backdrop-blur-sm'
               : 'px-0 py-0'
           }`}
           aria-label={organizationName}
@@ -108,7 +108,7 @@ export function SiteHeader({
             height={60}
             loading="eager"
             unoptimized={!isNextOptimizableImage(logoUrl)}
-            className="h-10 w-auto object-contain sm:h-11"
+            className="h-8 w-auto object-contain sm:h-9"
           />
         </Link>
 

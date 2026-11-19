@@ -209,7 +209,7 @@ export function AdminDashboardClient({
               height={46}
               loading="eager"
               unoptimized={!isNextOptimizableImage(settings.logoUrl)}
-              className="h-7 w-auto shrink-0 object-contain sm:h-9"
+              className="hidden h-9 w-auto shrink-0 object-contain lg:block"
             />
 
             <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">

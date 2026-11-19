@@ -34,7 +34,7 @@ export default async function ProyectosPage() {
         {intro?.isVisible && (
           <section
             data-nav-theme="light"
-            className="px-4 pt-28 pb-16 sm:px-6 md:pt-32 md:pb-24 lg:px-8"
+            className="px-4 pt-24 pb-16 sm:px-6 sm:pt-28 md:pt-32 md:pb-24 lg:px-8"
           >
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-12 lg:items-start">
               <div className="lg:sticky lg:top-28 lg:col-span-4">
